@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="@yield('meta_description', 'UMKM Lampung Barat — Platform marketplace untuk produk UMKM terbaik dari Lampung Barat. Temukan berbagai produk lokal berkualitas.')">
+    <meta name="keywords" content="UMKM, Lampung Barat, marketplace, produk lokal, belanja online">
+    <title>@yield('title', 'UMKM Lampung Barat') — Marketplace UMKM Terpercaya</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        @keyframes cart-bounce {
+            0% { transform: scale(1); }
+            30% { transform: scale(1.5); }
+            50% { transform: scale(0.9); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .cart-bounce {
+            animation: cart-bounce 0.5s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col" x-data="toastSystem">
+
+    {{-- ============================================ --}}
+    {{-- NAVBAR --}}
+    {{-- ============================================ --}}
+    <nav class="sticky top-0 z-50 glass shadow-nav" x-data="{ mobileOpen: false, searchOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {{-- Top Bar --}}
+            <div class="flex items-center justify-between h-16">
+                {{-- Logo --}}
+                <a href="{{ url('/') }}" wire:navigate class="flex items-center gap-2 shrink-0">
+                    <div class="w-9 h-9 rounded-lg hero-gradient flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8l-1.35-2.7A1 1 0 016.5 10H19m-3 3v6m-4-6v6m-4-6v6"/>
+                        </svg>
+                    </div>
+                    <span class="font-heading font-bold text-lg text-primary-500">UMKM <span class="text-accent-400">Lampung Barat</span></span>
+                </a>
+
+                {{-- Search Bar (Desktop) --}}
+                <div class="hidden md:flex flex-1 max-w-2xl mx-8" x-data="{ catOpen: false, activeCat: 'Semua Kategori', searchVal: '' }">
+                    <div class="relative flex w-full border border-surface-300 bg-white/80 rounded-xl focus-within:border-primary-400 focus-within:ring-2 focus-within:ring-primary-100 focus-within:bg-white transition-all">
+                        <!-- Category Selector Inside Search -->
+                        <button @click="catOpen = !catOpen" type="button" class="flex items-center gap-1.5 px-4 text-xs font-semibold text-surface-600 hover:bg-surface-50 border-r border-surface-200 shrink-0 rounded-l-xl">
+                            <span x-text="activeCat">Semua Kategori</span>
+                            <svg class="w-3.5 h-3.5 text-surface-400 transition-transform" :class="catOpen && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        
+                        <!-- Dropdown Options -->
+                        <div x-show="catOpen" @click.away="catOpen = false" x-transition
+                             class="absolute left-0 top-full mt-2 w-48 bg-white rounded-xl shadow-card-hover border border-surface-200 py-1.5 z-50">
+                            <button @click="activeCat = 'Semua Kategori'; catOpen = false" type="button" class="w-full text-left px-4 py-2 text-xs text-surface-700 hover:bg-surface-50 font-medium">
+                                Semua Kategori
+                            </button>
+                            @foreach(\App\Models\Category::orderBy('name')->get() as $category)
+                                <button @click="activeCat = @js($category->name); catOpen = false" type="button" class="w-full text-left px-4 py-2 text-xs text-surface-700 hover:bg-surface-50 font-medium">
+                                    {{ $category->name }}
+                                </button>
+                            @endforeach
+                        </div>
+
+                        <!-- Text Input -->
+                        <div class="relative flex-1">
+                            <input type="text" placeholder="Cari produk atau toko..." x-model="searchVal"
+                                   @keydown.enter="window.location.href = '{{ url('/products') }}?q=' + encodeURIComponent(searchVal) + (activeCat !== 'Semua Kategori' ? '&cat=' + encodeURIComponent(activeCat) : '')"
+                                   class="w-full pl-10 pr-4 py-2.5 bg-transparent border-0 text-sm focus:ring-0 outline-none">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Nav Actions --}}
+                <div class="flex items-center gap-2">
+                    {{-- Search Toggle (Mobile) --}}
+                    <button @click="searchOpen = !searchOpen" class="md:hidden p-2 rounded-lg hover:bg-surface-100 transition-colors">
+                        <svg class="w-5 h-5 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </button>
+
+                    {{-- Cart --}}
+                    @livewire('cart-manager')
+
+                    {{-- Auth Buttons --}}
+                    @auth
+                        {{-- Profile Dropdown --}}
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-surface-100 transition-colors">
+                                <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
+                                    <span class="text-sm font-semibold text-white">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
+                                </div>
+                                <svg class="w-4 h-4 text-surface-500 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="open" @click.away="open = false" x-transition
+                                 class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-card-hover border border-surface-200 py-2 z-50">
+                                @if(Auth::user()->role === 'admin')
+                                    <a href="{{ url('/admin/dashboard') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50 font-medium">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+                                        Dashboard Admin
+                                    </a>
+                                    <a href="{{ url('/admin/sellers') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        Verifikasi Seller
+                                    </a>
+                                    <a href="{{ url('/admin/categories') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                        Kelola Kategori
+                                    </a>
+                                @elseif(Auth::user()->role === 'seller')
+                                    <a href="{{ url('/seller/dashboard') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50 font-medium">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+                                        Dashboard Toko
+                                    </a>
+                                    <a href="{{ url('/seller/products') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                        Produk Saya
+                                    </a>
+                                    <a href="{{ url('/seller/orders') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 11-4 0 2 2 0 014 0zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        Pesanan Masuk
+                                    </a>
+                                @else
+                                    <a href="{{ url('/customer/dashboard') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50 font-medium">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+                                        Dashboard Saya
+                                    </a>
+                                    <a href="{{ url('/customer/orders') }}" wire:navigate class="flex items-center gap-2 px-4 py-2 text-sm text-surface-700 hover:bg-surface-50">
+                                        <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        Pesanan Saya
+                                    </a>
+                                @endif
+                                <hr class="my-1 border-surface-100">
+                                <a href="{{ route('logout') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-red-50">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                    Keluar
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ url('/login') }}" wire:navigate class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary-500 hover:bg-primary-50 rounded-lg transition-colors">
+                            Masuk
+                        </a>
+                        <a href="{{ url('/register') }}" wire:navigate class="hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors">
+                            Daftar
+                        </a>
+                    @endif
+
+                    {{-- Mobile Menu Toggle --}}
+                    <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2 rounded-lg hover:bg-surface-100 transition-colors">
+                        <svg x-show="!mobileOpen" class="w-5 h-5 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                        <svg x-show="mobileOpen" x-cloak class="w-5 h-5 text-surface-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            {{-- Mobile Search --}}
+            <div x-show="searchOpen" x-transition class="md:hidden pb-3" x-data="{ searchVal: '' }">
+                <input type="text" placeholder="Cari produk, toko, atau kategori..." x-model="searchVal"
+                       @keydown.enter="window.location.href = '{{ url('/products') }}?q=' + encodeURIComponent(searchVal)"
+                       class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-surface-300 bg-white text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-100">
+            </div>
+
+            {{-- Main Navigation (Desktop) --}}
+            <div class="hidden md:flex items-center justify-center gap-12 pb-3.5 text-base border-t border-surface-100 pt-3.5 mt-1">
+                <a href="{{ url('/') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('/') ? 'text-primary-500 font-bold' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
+                    Beranda
+                </a>
+                
+                <!-- Kategori Link -->
+                <a href="{{ url('/products') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('products*') && Request::has('cat') ? 'text-primary-500 font-bold' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    Kategori
+                </a>
+
+                <a href="{{ url('/stores') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('stores*') ? 'text-primary-500 font-bold' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    Toko UMKM
+                </a>
+
+                <a href="{{ url('/products') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('products') && !Request::has('cat') ? 'text-primary-500 font-bold' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    Semua Produk
+                </a>
+            </div>
+        </div>
+
+        {{-- Mobile Menu --}}
+        <div x-show="mobileOpen" x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+             class="md:hidden border-t border-surface-200 bg-white">
+            <div class="px-4 py-3 space-y-1">
+                <a href="{{ url('/') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Beranda</a>
+                <a href="{{ url('/stores') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Toko UMKM</a>
+                <a href="{{ url('/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Semua Produk</a>
+                <a href="{{ url('/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Kategori</a>
+                <hr class="border-surface-100 my-2">
+                @auth
+                    @if(Auth::user()->role === 'admin')
+                        <a href="{{ url('/admin/dashboard') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Dashboard Admin</a>
+                        <a href="{{ url('/admin/sellers') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Verifikasi Seller</a>
+                        <a href="{{ url('/admin/categories') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Kelola Kategori</a>
+                    @elseif(Auth::user()->role === 'seller')
+                        <a href="{{ url('/seller/dashboard') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Dashboard Toko</a>
+                        <a href="{{ url('/seller/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Produk Saya</a>
+                        <a href="{{ url('/seller/orders') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Pesanan Masuk</a>
+                    @else
+                        <a href="{{ url('/customer/dashboard') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Dashboard Saya</a>
+                        <a href="{{ url('/customer/orders') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Pesanan Saya</a>
+                    @endif
+                    <a href="{{ route('logout') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-danger hover:bg-red-50">Keluar</a>
+                @else
+                    <a href="{{ url('/login') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-primary-500 hover:bg-primary-50">Masuk</a>
+                    <a href="{{ url('/register') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-white bg-primary-500 text-center hover:bg-primary-600">Daftar</a>
+                @endif
+            </div>
+        </div>
+    </nav>
+
+    {{-- ============================================ --}}
+    {{-- MAIN CONTENT --}}
+    {{-- ============================================ --}}
+    <main class="flex-1">
+        @yield('content')
+    </main>
+
+    {{-- ============================================ --}}
+    {{-- FOOTER --}}
+    {{-- ============================================ --}}
+    <footer class="bg-primary-800 text-white mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {{-- Brand --}}
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-9 h-9 rounded-lg gold-gradient flex items-center justify-center">
+                            <svg class="w-5 h-5 text-primary-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8l-1.35-2.7A1 1 0 016.5 10H19m-3 3v6m-4-6v6m-4-6v6"/>
+                            </svg>
+                        </div>
+                        <span class="font-heading font-bold text-lg">UMKM <span class="text-accent-400">Lampung Barat</span></span>
+                    </div>
+                    <p class="text-primary-200 text-sm leading-relaxed">Platform marketplace terpercaya untuk produk-produk UMKM berkualitas dari Lampung Barat.</p>
+                </div>
+
+                {{-- Links --}}
+                <div>
+                    <h4 class="font-heading font-semibold text-accent-400 mb-4">Navigasi</h4>
+                    <ul class="space-y-2 text-sm text-primary-200">
+                        <li><a href="{{ url('/') }}" wire:navigate class="hover:text-white transition-colors">Beranda</a></li>
+                        <li><a href="{{ url('/products') }}" wire:navigate class="hover:text-white transition-colors">Produk</a></li>
+                        <li><a href="{{ url('/register-seller') }}" wire:navigate class="hover:text-white transition-colors">Daftar Jadi Penjual</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-heading font-semibold text-accent-400 mb-4">Bantuan</h4>
+                    <ul class="space-y-2 text-sm text-primary-200">
+                        <li><a href="#" class="hover:text-white transition-colors">Cara Belanja</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Cara Menjual</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Hubungi Kami</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-heading font-semibold text-accent-400 mb-4">Kontak</h4>
+                    <ul class="space-y-2 text-sm text-primary-200">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            Lampung Barat
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            info@umkmairhitam.id
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            +62 812-xxxx-xxxx
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="border-primary-700 my-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-primary-300">
+                <p>&copy; {{ date('Y') }} UMKM Lampung Barat. Hak cipta dilindungi.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-white transition-colors">Syarat & Ketentuan</a>
+                    <a href="#" class="hover:text-white transition-colors">Kebijakan Privasi</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {{-- ============================================ --}}
+    {{-- TOAST NOTIFICATIONS --}}
+    {{-- ============================================ --}}
+    <div class="fixed bottom-4 right-4 z-[100] space-y-2" aria-live="polite">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div x-show="true" x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-2 scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
+                 :class="{
+                     'bg-green-600': toast.type === 'success',
+                     'bg-red-600': toast.type === 'error',
+                     'bg-blue-600': toast.type === 'info',
+                     'bg-amber-600': toast.type === 'warning'
+                 }"
+                 class="text-white px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 min-w-[280px]">
+                <template x-if="toast.type === 'success'">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </template>
+                <span x-text="toast.message"></span>
+            </div>
+        </template>
+    </div>
+
+    {{-- Login Modal (for Guest trying to add to cart) --}}
+    <div x-data="{ show: false }"
+         @login-required.window="show = true"
+         x-show="show" x-cloak
+         class="fixed inset-0 z-[90] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="show = false"></div>
+        <div x-show="show" x-transition class="relative bg-white rounded-2xl shadow-modal p-8 max-w-sm w-full text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-50 flex items-center justify-center">
+                <svg class="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <h3 class="font-heading text-xl font-bold text-surface-900 mb-2">Masuk Terlebih Dahulu</h3>
+            <p class="text-surface-500 text-sm mb-6">Silakan masuk atau daftar akun untuk mulai berbelanja di UMKM Lampung Barat.</p>
+            <div class="flex flex-col gap-3">
+                <a href="{{ url('/login') }}" class="w-full py-2.5 px-4 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors">Masuk</a>
+                <a href="{{ url('/register') }}" class="w-full py-2.5 px-4 border-2 border-primary-500 text-primary-500 font-semibold rounded-xl hover:bg-primary-50 transition-colors">Daftar Akun Baru</a>
+            </div>
+            <button @click="show = false" class="absolute top-4 right-4 text-surface-400 hover:text-surface-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+    </div>
+
+    {{-- Real-Time Notification Listener (Customer Side) --}}
+    @auth
+        @if(Auth::user()->role === 'customer')
+            <script>
+                document.addEventListener('livewire:navigated', () => {
+                    const userId = {{ Auth::id() }};
+                    if (window.Echo) {
+                        // Clean up previous listener to avoid duplicates
+                        window.Echo.leave('users.' + userId);
+
+                        window.Echo.private('users.' + userId)
+                            .listen('OrderStatusUpdated', (e) => {
+                                // Play notification chime
+                                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav');
+                                audio.play().catch(err => console.log('Audio playback error:', err));
+
+                                // Show in-app toast notification
+                                window.dispatchEvent(new CustomEvent('toast', {
+                                    detail: {
+                                        message: e.message + ' (Kode: ' + e.order_code + ')',
+                                        type: 'info'
+                                    }
+                                }));
+
+                                // Native browser push notification
+                                if ('Notification' in window && Notification.permission === 'granted') {
+                                    new Notification('UMKM Lampung Barat — Pesanan ' + e.order_code, {
+                                        body: e.message,
+                                        icon: '/favicon.ico',
+                                        tag: 'order-' + e.order_id
+                                    });
+                                }
+
+                                // Refresh Livewire component if on order detail page
+                                if (window.Livewire) {
+                                    window.Livewire.dispatch('$refresh');
+                                }
+                            });
+                    }
+                });
+
+                // Request browser notification permission on page load
+                document.addEventListener('DOMContentLoaded', () => {
+                    if ('Notification' in window && Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+                });
+            </script>
+        @endif
+    @endauth
+
+    @stack('scripts')
+</body>
+</html>

@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
+
+class SellerApprovedMiddleware
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $user = Auth::user();
+        
+        if ($user && $user->role === 'seller') {
+            $store = $user->store;
+            if (!$store || $store->status !== 'approved') {
+                return redirect()->route('seller.dashboard')
+                    ->with('error', 'Akses dibatasi. Toko Anda belum disetujui oleh admin.');
+            }
+        }
+
+        return $next($request);
+    }
+}
