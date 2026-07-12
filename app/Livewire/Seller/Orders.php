@@ -37,16 +37,12 @@ class Orders extends Component
 
     public function showOrder(int $id): void
     {
-        $this->orderId = $id;
-        $this->view = 'show';
-        $this->editingCourier = false;
+        $this->redirect(route('seller.orders', ['id' => $id]), navigate: true);
     }
 
     public function backToList(): void
     {
-        $this->orderId = null;
-        $this->view = 'list';
-        $this->editingCourier = false;
+        $this->redirect(route('seller.orders'), navigate: true);
     }
 
     /** Seller input ongkir → status jadi waiting_payment */
