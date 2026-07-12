@@ -14,3 +14,13 @@ Broadcast::channel('users.{userId}', function ($user, $userId) {
     return (int) $user->id === (int) $userId;
 });
 
+Broadcast::channel('orders.{orderId}', function ($user, $orderId) {
+    $order = \App\Models\Order::find($orderId);
+    if (! $order) {
+        return false;
+    }
+
+    return (int) $user->id === (int) $order->customer_id
+        || ($user->isSeller() && $user->store && (int) $user->store->id === (int) $order->store_id);
+});
+

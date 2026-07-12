@@ -15,18 +15,30 @@ class Order extends Model
         'total_price',
         'shipping_cost',
         'shipping_address',
+        'shipping_phone',
         'payment_method',
         'payment_status',
         'status',
         'xendit_invoice_id',
         'xendit_invoice_url',
         'paid_at',
+        'courier_name',
+        'courier_phone',
+        'courier_token',
+        'courier_lat',
+        'courier_lng',
+        'courier_location_updated_at',
+        'is_tracking_active',
     ];
 
     protected function casts(): array
     {
         return [
             'paid_at' => 'datetime',
+            'courier_location_updated_at' => 'datetime',
+            'is_tracking_active' => 'boolean',
+            'courier_lat' => 'float',
+            'courier_lng' => 'float',
         ];
     }
 
@@ -62,5 +74,11 @@ class Order extends Model
     public function isPaid(): bool
     {
         return $this->payment_status === 'paid';
+    }
+
+    /** URL pelacakan kurir (link sekali pakai, hanya valid selama courier_token belum dihanguskan) */
+    public function courierTrackingUrl(): ?string
+    {
+        return $this->courier_token ? url('/lacak-kurir/' . $this->courier_token) : null;
     }
 }

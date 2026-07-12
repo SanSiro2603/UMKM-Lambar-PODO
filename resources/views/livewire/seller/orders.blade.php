@@ -1,4 +1,4 @@
-<div>
+<div x-data @open-whatsapp.window="window.open($event.detail.url, '_blank')">
     @if($store->status !== 'approved')
         <div class="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center shadow-card max-w-2xl mx-auto my-12">
             <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -96,7 +96,7 @@
                         <h3 class="font-heading font-bold text-surface-900 mb-3">Info Customer</h3>
                         <div class="space-y-2 text-sm">
                             <p><span class="text-surface-500">Nama:</span> <span class="font-medium text-surface-800">{{ $order->customer->name }}</span></p>
-                            <p><span class="text-surface-500">Telepon:</span> <span class="font-medium text-surface-800">{{ $order->customer->phone }}</span></p>
+                            <p><span class="text-surface-500">Telepon:</span> <span class="font-medium text-surface-800">{{ $order->shipping_phone ?: $order->customer->phone }}</span></p>
                             <p><span class="text-surface-500">Alamat Kirim:</span></p>
                             <p class="text-surface-600 bg-surface-50 p-2.5 rounded-lg border border-surface-100 mt-1 leading-relaxed">{{ $order->shipping_address }}</p>
                         </div>
@@ -164,11 +164,61 @@
                             @elseif($order->status === 'waiting_payment')
                                 <p class="text-sm text-surface-500">Menunggu customer melakukan pembayaran. Pembayaran akan terkonfirmasi otomatis setelah customer selesai bayar.</p>
                             @elseif($order->status === 'paid')
-                                <p class="text-xs text-surface-500 mb-4">Pembayaran sudah dikonfirmasi. Silakan proses pesanan dan kirim ke customer.</p>
-                                <button wire:click="shipOrder" class="w-full py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm shadow-md">Tandai Telah Dikirim</button>
+                                <p class="text-xs text-surface-500 mb-4">Pembayaran sudah dikonfirmasi. Tugaskan kurir untuk mengantar pesanan ini — link pelacakan akan dikirim otomatis via WhatsApp.</p>
+                                <form wire:submit.prevent="sendCourierAccess" class="space-y-3">
+                                    <div>
+                                        <input type="text" wire:model="courierName" placeholder="Nama Kurir" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">
+                                        @error('courierName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div>
+                                        <input type="text" wire:model="courierPhone" placeholder="No. WhatsApp Kurir (08xxxxxxxxxx)" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">
+                                        @error('courierPhone') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                    </div>
+                                    <button type="submit" class="w-full py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm shadow-md">
+                                        <span wire:loading.remove wire:target="sendCourierAccess">Kirim Akses Kurir</span>
+                                        <span wire:loading wire:target="sendCourierAccess">Memproses...</span>
+                                    </button>
+                                </form>
                             @elseif($order->status === 'shipped')
-                                <p class="text-xs text-surface-500 mb-4">Barang dalam pengiriman. Tunggu customer konfirmasi atau selesaikan manual.</p>
-                                <button wire:click="completeOrder" class="w-full py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all text-sm shadow-md">Tandai Selesai</button>
+                                @if($editingCourier)
+                                    <form wire:submit.prevent="updateCourierAccess" class="space-y-3">
+                                        <p class="text-xs text-surface-500">Perbaiki data kurir jika salah ketik nama/nomor. Link pelacakan lama akan dihanguskan & link baru dikirim ulang via WhatsApp.</p>
+                                        <div>
+                                            <input type="text" wire:model="courierName" placeholder="Nama Kurir" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">
+                                            @error('courierName') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <input type="text" wire:model="courierPhone" placeholder="No. WhatsApp Kurir (08xxxxxxxxxx)" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">
+                                            @error('courierPhone') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button type="button" wire:click="cancelEditCourier" class="flex-1 py-2.5 bg-surface-100 text-surface-600 font-semibold rounded-xl hover:bg-surface-200 transition-all text-sm">Batal</button>
+                                            <button type="submit" class="flex-1 py-2.5 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all text-sm shadow-md">
+                                                <span wire:loading.remove wire:target="updateCourierAccess">Simpan & Kirim Ulang</span>
+                                                <span wire:loading wire:target="updateCourierAccess">Memproses...</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <div class="space-y-3">
+                                        <div class="p-3 bg-surface-50 border border-surface-100 rounded-xl text-sm">
+                                            <p><span class="text-surface-500">Kurir:</span> <span class="font-medium text-surface-800">{{ $order->courier_name }}</span></p>
+                                            <p><span class="text-surface-500">No. WA:</span> <span class="font-medium text-surface-800">{{ $order->courier_phone }}</span></p>
+                                            <p class="mt-1">
+                                                @if($order->courier_token)
+                                                    <span class="text-xs font-semibold px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">Link pelacakan aktif</span>
+                                                @else
+                                                    <span class="text-xs font-semibold px-2 py-0.5 bg-surface-200 text-surface-600 rounded-full">Link sudah tidak berlaku</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <p class="text-xs text-surface-500">Barang dalam pengiriman. Status akan otomatis menjadi "Selesai" saat kurir menyelesaikan pengantaran di halamannya.</p>
+                                        @if($order->courier_token)
+                                            <button wire:click="editCourierAccess" class="w-full py-2.5 bg-white border border-surface-300 text-surface-700 font-semibold rounded-xl hover:bg-surface-50 transition-all text-sm">Edit Info Kurir (Salah Ketik?)</button>
+                                        @endif
+                                        <button wire:click="completeOrder" wire:confirm="Tandai pesanan ini selesai secara manual?" class="w-full py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 transition-all text-sm shadow-md">Tandai Selesai (Manual)</button>
+                                    </div>
+                                @endif
                             @elseif($order->status === 'delivered')
                                 <div class="p-3 bg-green-50 text-green-700 border border-green-200 rounded-xl text-center text-sm font-semibold">Transaksi Selesai</div>
                             @elseif($order->status === 'cancelled')

@@ -44,6 +44,9 @@ Route::middleware(['throttle:public'])->group(function() {
     Route::get('/products/{slug}', \App\Livewire\ProductDetail::class)->name('products.show');
     Route::get('/stores', \App\Livewire\StoreCatalog::class)->name('stores.index');
     Route::get('/stores/{slug}', \App\Livewire\StoreDetail::class)->name('stores.show');
+
+    // Halaman kurir — link sekali pakai (Token_Rahasia), tanpa login/akun kurir
+    Route::get('/lacak-kurir/{token}', \App\Livewire\CourierTracking::class)->name('courier.tracking');
 });
 
 // ============================================

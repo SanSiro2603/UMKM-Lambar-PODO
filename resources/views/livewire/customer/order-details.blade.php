@@ -157,6 +157,138 @@
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <div class="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium">Pesanan telah dibatalkan.</div>
             </div>
+            @elseif($order->status === 'shipped')
+            {{-- Live Courier Tracking Map --}}
+            <div class="bg-white rounded-2xl shadow-card p-5">
+                <h3 class="font-heading font-bold text-surface-900 mb-4 flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span></span>
+                    Lacak Kurir Real-Time
+                </h3>
+                @if($order->courier_name)
+                    <p class="text-sm text-surface-500 mb-3">Kurir: <span class="font-medium text-surface-800">{{ $order->courier_name }}</span></p>
+                @endif
+                <div wire:ignore id="courier-map-{{ $order->id }}" class="rounded-xl overflow-hidden border border-surface-100" style="height: 480px;"></div>
+                <p class="text-xs text-surface-400 mt-3" id="courier-map-info-{{ $order->id }}">
+                    @if($order->courier_lat && $order->courier_lng)
+                        Update terakhir: {{ $order->courier_location_updated_at?->format('H:i:s') }} WIB
+                    @else
+                        Menunggu kurir mulai mengirim lokasi...
+                    @endif
+                </p>
+
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+                <script>
+                    (function () {
+                        const mapId = 'courier-map-{{ $order->id }}';
+                        const infoId = 'courier-map-info-{{ $order->id }}';
+                        const orderId = {{ $order->id }};
+                        const initialLat = @json($order->courier_lat);
+                        const initialLng = @json($order->courier_lng);
+                        const shippingAddress = @json($order->shipping_address);
+
+                        function initMap() {
+                            const el = document.getElementById(mapId);
+                            if (!el || el.dataset.leafletInited) return;
+                            el.dataset.leafletInited = '1';
+
+                            const startLat = initialLat ?? -4.95;
+                            const startLng = initialLng ?? 105.0;
+
+                            // Dikunci ke wilayah Provinsi Lampung (bukan cuma Kab. Lampung Barat) agar kurir tetap terlihat di peta
+                            const lampungBounds = L.latLngBounds([-6.80, 103.30], [-3.40, 106.10]);
+
+                            const map = L.map(mapId, {
+                                maxBounds: lampungBounds,
+                                maxBoundsViscosity: 0.8,
+                                minZoom: 8,
+                            }).setView([startLat, startLng], 8);
+
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; OpenStreetMap contributors'
+                            }).addTo(map);
+
+                            const motorIcon = L.divIcon({
+                                html: '<div style="font-size:24px;line-height:1;">🏍️</div>',
+                                className: '',
+                                iconSize: [28, 28],
+                            });
+
+                            const houseIcon = L.divIcon({
+                                html: '<div style="font-size:24px;line-height:1;">🏠</div>',
+                                className: '',
+                                iconSize: [28, 28],
+                            });
+
+                            let marker = (initialLat && initialLng)
+                                ? L.marker([initialLat, initialLng], { icon: motorIcon }).bindPopup('Posisi Kurir').addTo(map)
+                                : null;
+                            let destMarker = null;
+
+                            function placeDestMarker(lat, lng) {
+                                destMarker = L.marker([lat, lng], { icon: houseIcon })
+                                    .bindPopup('Perkiraan Alamat Tujuan')
+                                    .addTo(map);
+
+                                if (marker) {
+                                    map.fitBounds(L.latLngBounds([lat, lng], marker.getLatLng()), { padding: [40, 40] });
+                                } else {
+                                    map.setView([lat, lng], 12);
+                                }
+                            }
+
+                            // Cari titik koordinat alamat tujuan (geocoding gratis via OpenStreetMap Nominatim).
+                            // Alamat pekon/desa yang terlalu detail sering tidak ditemukan, jadi coba semakin umum
+                            // (buang bagian paling depan) sampai ketemu, minimal sampai level kabupaten.
+                            function geocodeDestination(parts, startIndex) {
+                                if (startIndex >= parts.length) return;
+                                const query = parts.slice(startIndex).join(', ');
+
+                                fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=id&q=' + encodeURIComponent(query))
+                                    .then((res) => res.json())
+                                    .then((results) => {
+                                        if (results && results.length) {
+                                            placeDestMarker(parseFloat(results[0].lat), parseFloat(results[0].lon));
+                                        } else {
+                                            setTimeout(() => geocodeDestination(parts, startIndex + 1), 1100);
+                                        }
+                                    })
+                                    .catch(() => {
+                                        setTimeout(() => geocodeDestination(parts, startIndex + 1), 1100);
+                                    });
+                            }
+
+                            if (shippingAddress) {
+                                const addressParts = shippingAddress.split(',').map((s) => s.trim()).filter(Boolean);
+                                geocodeDestination(addressParts, 0);
+                            }
+
+                            if (window.Echo) {
+                                window.Echo.private('orders.' + orderId)
+                                    .listen('.location.updated', (e) => {
+                                        if (!marker) {
+                                            marker = L.marker([e.lat, e.lng], { icon: motorIcon }).bindPopup('Posisi Kurir').addTo(map);
+                                        } else {
+                                            marker.setLatLng([e.lat, e.lng]);
+                                        }
+                                        map.panTo([e.lat, e.lng]);
+                                        const info = document.getElementById(infoId);
+                                        if (info && e.updated_at) {
+                                            info.innerText = 'Update terakhir: ' + new Date(e.updated_at).toLocaleTimeString('id-ID');
+                                        }
+                                    });
+                            }
+                        }
+
+                        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+                            setTimeout(initMap, 0);
+                        } else {
+                            document.addEventListener('DOMContentLoaded', initMap);
+                        }
+                        document.addEventListener('livewire:navigated', initMap);
+                    })();
+                </script>
+            </div>
             @elseif($order->status === 'delivered')
             {{-- Rating Section --}}
             <div class="bg-white rounded-2xl shadow-card p-5">
@@ -267,7 +399,7 @@
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h3 class="font-heading font-bold text-surface-900 mb-4">Alamat Pengiriman</h3>
                 <p class="text-sm font-medium text-surface-800">{{ $order->customer->name }}</p>
-                <p class="text-sm text-surface-600 mt-1">{{ $order->customer->phone }}</p>
+                <p class="text-sm text-surface-600 mt-1">{{ $order->shipping_phone ?: $order->customer->phone }}</p>
                 <p class="text-sm text-surface-500 mt-2">{{ $order->shipping_address }}</p>
             </div>
         </div>

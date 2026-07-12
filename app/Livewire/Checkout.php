@@ -18,6 +18,7 @@ class Checkout extends Component
     public array $paymentMethods = []; // store_id => method ('xendit' or 'cod')
     public array $purchasedProductIds = [];
     public string $shippingAddress = '';
+    public string $shippingPhone = '';
     public ?int $buyNowProductId = null;
     public int $buyNowQty = 1;
 
@@ -34,6 +35,7 @@ class Checkout extends Component
         }
 
         $this->shippingAddress = $user->address;
+        $this->shippingPhone = $user->phone ?? '';
         $this->buyNowProductId = request()->query('product_id') ? (int) request()->query('product_id') : null;
         $this->buyNowQty = request()->query('qty') ? (int) request()->query('qty') : 1;
 
@@ -167,6 +169,10 @@ class Checkout extends Component
     {
         $this->validate([
             'shippingAddress' => 'required|string|min:10',
+            'shippingPhone'   => 'required|string|min:9|max:15|regex:/^[0-9+]+$/',
+        ], [
+            'shippingPhone.required' => 'Nomor HP wajib diisi agar kurir dapat menghubungi Anda.',
+            'shippingPhone.regex'    => 'Nomor HP hanya boleh berisi angka.',
         ]);
 
         // Validasi alamat hanya pengiriman wilayah Lampung Barat
@@ -225,6 +231,7 @@ class Checkout extends Component
                         'total_price' => $totalPrice,
                         'shipping_cost' => null,
                         'shipping_address' => $this->shippingAddress,
+                        'shipping_phone' => $this->shippingPhone,
                         'payment_method' => $paymentMethod,
                         'payment_status' => 'unpaid',
                         'status' => 'waiting_shipping_cost',
