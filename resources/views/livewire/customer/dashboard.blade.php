@@ -92,7 +92,7 @@
                     {{-- Kecamatan Selector --}}
                     <div>
                         <label for="selectedDistrictCode" class="block text-xs font-semibold text-surface-500 uppercase tracking-wider mb-1">Kecamatan (Kab. Lampung Barat)</label>
-                        <select id="selectedDistrictCode" wire:model.change="selectedDistrictCode" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100 bg-white">
+                        <select id="selectedDistrictCode" wire:model.live="selectedDistrictCode" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100 bg-white">
                             @foreach($this->districts as $d)
                                 <option value="{{ $d['code'] }}">{{ $d['name'] }}</option>
                             @endforeach
@@ -103,7 +103,7 @@
                     {{-- Kelurahan / Desa Selector --}}
                     <div>
                         <label for="selectedVillageCode" class="block text-xs font-semibold text-surface-500 uppercase tracking-wider mb-1">Kelurahan / Desa / Pekon</label>
-                        <select id="selectedVillageCode" wire:model.change="selectedVillageCode" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100 bg-white">
+                        <select id="selectedVillageCode" wire:model.live="selectedVillageCode" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100 bg-white">
                             <option value="">Pilih Desa/Kelurahan</option>
                             @foreach($this->villages as $v)
                                 <option value="{{ $v['code'] }}">{{ $v['name'] }}</option>

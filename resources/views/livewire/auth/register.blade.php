@@ -30,7 +30,7 @@
         {{-- Kecamatan --}}
         <div>
             <label for="districtCode" class="block text-sm font-medium text-surface-700 mb-1.5">Kecamatan (Lampung Barat)</label>
-            <select id="districtCode" wire:model.change="districtCode"
+            <select id="districtCode" wire:model.live="districtCode"
                     class="w-full px-4 py-3 rounded-xl border border-surface-300 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all">
                 <option value="">Pilih Kecamatan</option>
                 @foreach($districts as $d)
@@ -43,7 +43,7 @@
         {{-- Desa/Kelurahan --}}
         <div>
             <label for="villageCode" class="block text-sm font-medium text-surface-700 mb-1.5">Desa / Kelurahan</label>
-            <select id="villageCode" wire:model.change="villageCode"
+            <select id="villageCode" wire:model.live="villageCode"
                     class="w-full px-4 py-3 rounded-xl border border-surface-300 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-all">
                 <option value="">Pilih Desa/Kelurahan</option>
                 @foreach($villages as $v)
