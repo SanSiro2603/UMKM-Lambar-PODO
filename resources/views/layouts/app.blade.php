@@ -179,10 +179,15 @@
             </div>
 
             {{-- Main Navigation (Desktop) --}}
-            <div class="hidden md:flex items-center justify-center gap-12 pb-3.5 text-base border-t border-surface-100 pt-3.5 mt-1">
+            <div class="hidden md:flex items-center justify-center gap-5 lg:gap-10 xl:gap-12 pb-3.5 text-sm lg:text-base border-t border-surface-100 pt-3.5 mt-1">
                 <a href="{{ url('/') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('/') ? 'text-primary-500 font-bold' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
                     Beranda
+                </a>
+
+                <a href="{{ route('panduan') }}" wire:navigate class="flex items-center gap-2 text-surface-600 hover:text-primary-500 font-semibold transition-colors {{ Request::is('panduan') ? 'text-primary-500 font-bold' : '' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5s3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"/></svg>
+                    Panduan
                 </a>
                 
                 <!-- Kategori Link -->
@@ -211,9 +216,10 @@
              class="md:hidden border-t border-surface-200 bg-white">
             <div class="px-4 py-3 space-y-1">
                 <a href="{{ url('/') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Beranda</a>
+                <a href="{{ route('panduan') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium {{ Request::is('panduan') ? 'bg-primary-50 text-primary-600' : 'text-surface-700 hover:bg-surface-50' }}">Panduan</a>
+                <a href="{{ url('/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Kategori</a>
                 <a href="{{ url('/stores') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Toko UMKM</a>
                 <a href="{{ url('/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Semua Produk</a>
-                <a href="{{ url('/products') }}" wire:navigate class="block px-3 py-2 rounded-lg text-sm font-medium text-surface-700 hover:bg-surface-50">Kategori</a>
                 <hr class="border-surface-100 my-2">
                 @auth
                     @if(Auth::user()->role === 'admin')
@@ -275,8 +281,8 @@
                 <div>
                     <h4 class="font-heading font-semibold text-accent-400 mb-4">Bantuan</h4>
                     <ul class="space-y-2 text-sm text-primary-200">
-                        <li><a href="#" class="hover:text-white transition-colors">Cara Belanja</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Cara Menjual</a></li>
+                        <li><a href="{{ route('panduan', ['tab' => 'customer']) }}" wire:navigate class="hover:text-white transition-colors">Cara Belanja</a></li>
+                        <li><a href="{{ route('panduan', ['tab' => 'seller']) }}" wire:navigate class="hover:text-white transition-colors">Cara Menjual</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">FAQ</a></li>
                         <li><a href="#" class="hover:text-white transition-colors">Hubungi Kami</a></li>
                     </ul>

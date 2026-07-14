@@ -45,6 +45,8 @@ Route::middleware(['throttle:public'])->group(function() {
         
         return view('home', compact('categories', 'products', 'stores'));
     })->name('home');
+
+    Route::view('/panduan', 'panduan')->name('panduan');
     
     Route::get('/products', \App\Livewire\ProductCatalog::class)->name('products.index');
     Route::get('/products/{slug}', \App\Livewire\ProductDetail::class)->name('products.show');
