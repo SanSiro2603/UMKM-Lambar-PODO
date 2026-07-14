@@ -14,6 +14,7 @@ class Order extends Model
         'store_id',
         'total_price',
         'shipping_cost',
+        'shipping_zone_label',
         'shipping_address',
         'shipping_phone',
         'payment_method',

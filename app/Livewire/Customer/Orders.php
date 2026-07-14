@@ -27,7 +27,7 @@ class Orders extends Component
 
         if ($this->statusTab !== 'semua') {
             if ($this->statusTab === 'menunggu') {
-                $query->whereIn('status', ['waiting_shipping_cost', 'waiting_payment']);
+                $query->where('status', 'waiting_payment');
             } else {
                 $query->where('status', $this->statusTab);
             }

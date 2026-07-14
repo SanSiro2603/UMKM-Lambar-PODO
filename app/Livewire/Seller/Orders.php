@@ -14,7 +14,6 @@ class Orders extends Component
     public string $view = 'list';
     public ?int $orderId = null;
     public string $statusTab = 'semua';
-    public string $inputShippingCost = '';
     public string $courierName = '';
     public string $courierPhone = '';
     public bool $editingCourier = false;
@@ -43,43 +42,6 @@ class Orders extends Component
     public function backToList(): void
     {
         $this->redirect(route('seller.orders'), navigate: true);
-    }
-
-    /** Seller input ongkir → status jadi waiting_payment */
-    public function setShippingCost(): void
-    {
-        $this->validate([
-            'inputShippingCost' => 'required|integer|min:0|max:1000000',
-        ], [
-            'inputShippingCost.required' => 'Ongkos kirim wajib diisi.',
-            'inputShippingCost.integer'  => 'Ongkos kirim harus berupa angka.',
-            'inputShippingCost.min'      => 'Ongkos kirim minimal Rp 0.',
-            'inputShippingCost.max'      => 'Ongkos kirim maksimal Rp 1.000.000.',
-        ]);
-
-        $store = Auth::user()->store;
-        $order = Order::where('store_id', $store->id)
-                      ->where('id', $this->orderId)
-                      ->firstOrFail();
-
-        if ($order->shipping_cost !== null) {
-            session()->flash('error', 'Ongkos kirim untuk pesanan ini sudah ditentukan.');
-            return;
-        }
-
-        $cost = (int) $this->inputShippingCost;
-
-        // Pesanan COD tidak memerlukan pembayaran online — langsung siap diproses/dikirim.
-        $nextStatus = $order->payment_method === 'cod' ? 'paid' : 'waiting_payment';
-
-        $order->update([
-            'shipping_cost' => $cost,
-            'total_price'   => $order->total_price + $cost,
-            'status'        => $nextStatus,
-        ]);
-
-        $this->inputShippingCost = '';
-        session()->flash('success', 'Ongkos kirim berhasil ditentukan: Rp ' . number_format($cost, 0, ',', '.'));
     }
 
     /** Seller input data kurir & kirim link pelacakan (token sekali pakai) via WhatsApp */

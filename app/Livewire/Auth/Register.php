@@ -98,6 +98,7 @@ class Register extends Component
             'email' => $this->email,
             'phone' => $this->phone,
             'address' => $fullAddress,
+            'district_code' => $this->districtCode,
             'password' => Hash::make($this->password),
             'role' => 'customer',
         ]);

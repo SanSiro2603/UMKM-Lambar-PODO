@@ -53,14 +53,16 @@ return new class extends Migration
         DB::statement("UPDATE orders SET status = 'cancelled' WHERE status = 'dibatalkan'");
         DB::statement("UPDATE orders SET status = 'paid' WHERE status = 'diproses'");
 
-        // 3. Ubah enum payment_status: hapus 'verified', ganti ke sistem baru
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','failed') DEFAULT 'unpaid'");
+        if ($this->canModifyEnumColumns()) {
+            // 3. Ubah enum payment_status: hapus 'verified', ganti ke sistem baru
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','failed') DEFAULT 'unpaid'");
 
-        // 4. Ubah enum payment_method: hanya 'xendit' dan 'cod'
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('xendit','cod') DEFAULT 'xendit'");
+            // 4. Ubah enum payment_method: hanya 'xendit' dan 'cod'
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('xendit','cod') DEFAULT 'xendit'");
 
-        // 5. Ubah enum status order: alur baru
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('waiting_shipping_cost','waiting_payment','paid','shipped','delivered','cancelled') DEFAULT 'waiting_shipping_cost'");
+            // 5. Ubah enum status order: alur baru
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('waiting_shipping_cost','waiting_payment','paid','shipped','delivered','cancelled') DEFAULT 'waiting_shipping_cost'");
+        }
 
         // 6. Tambah kolom baru untuk Xendit invoice tracking
         Schema::table('orders', function (Blueprint $table) {
@@ -85,10 +87,12 @@ return new class extends Migration
             $table->text('payment_rejection_reason')->nullable()->after('payment_verified_by');
         });
 
-        // Kembalikan enum ke versi lama (perlu tambah dulu semua nilai baru)
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('xendit','cod','transfer') DEFAULT 'xendit'");
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','failed','verified') DEFAULT 'unpaid'");
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('waiting_shipping_cost','waiting_payment','paid','shipped','delivered','cancelled','pending','menunggu_validasi','diproses','dikirim','selesai','dibatalkan') DEFAULT 'pending'");
+        if ($this->canModifyEnumColumns()) {
+            // Kembalikan enum ke versi lama (perlu tambah dulu semua nilai baru)
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('xendit','cod','transfer') DEFAULT 'xendit'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','failed','verified') DEFAULT 'unpaid'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('waiting_shipping_cost','waiting_payment','paid','shipped','delivered','cancelled','pending','menunggu_validasi','diproses','dikirim','selesai','dibatalkan') DEFAULT 'pending'");
+        }
 
         // UPDATE data kembali ke nilai lama
         DB::statement("UPDATE orders SET payment_method = 'transfer' WHERE payment_method = 'xendit'");
@@ -100,9 +104,16 @@ return new class extends Migration
         DB::statement("UPDATE orders SET status = 'selesai' WHERE status = 'delivered'");
         DB::statement("UPDATE orders SET status = 'dibatalkan' WHERE status = 'cancelled'");
 
-        // Hapus nilai-nilai baru dari enum
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('transfer','cod') DEFAULT 'transfer'");
-        DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','verified','failed') DEFAULT 'unpaid'");
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','menunggu_validasi','diproses','dikirim','selesai','dibatalkan') DEFAULT 'pending'");
+        if ($this->canModifyEnumColumns()) {
+            // Hapus nilai-nilai baru dari enum
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_method ENUM('transfer','cod') DEFAULT 'transfer'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN payment_status ENUM('unpaid','paid','verified','failed') DEFAULT 'unpaid'");
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','menunggu_validasi','diproses','dikirim','selesai','dibatalkan') DEFAULT 'pending'");
+        }
+    }
+
+    private function canModifyEnumColumns(): bool
+    {
+        return in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true);
     }
 };

@@ -11,7 +11,7 @@
             </div>
         </div>
         <div>
-            @if(in_array($order->status, ['waiting_shipping_cost', 'waiting_payment']))
+            @if($order->status === 'waiting_payment')
                 <button wire:click="cancelOrder" wire:confirm="Apakah Anda yakin ingin membatalkan pesanan ini?" class="px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl hover:bg-red-100 text-sm font-semibold transition-all">Batalkan Pesanan</button>
             @endif
             @if($order->status === 'shipped')
@@ -40,8 +40,7 @@
         <div class="space-y-0">
                 @php
                     $statusFlow = [
-                        'waiting_shipping_cost' => ['label' => 'Pesanan Dibuat', 'desc' => 'Menunggu penjual menentukan ongkos kirim'],
-                        'waiting_payment'       => ['label' => 'Menunggu Pembayaran', 'desc' => 'Ongkir sudah ditentukan, silakan lakukan pembayaran'],
+                        'waiting_payment'       => ['label' => 'Menunggu Pembayaran', 'desc' => 'Pesanan dibuat, silakan lakukan pembayaran'],
                         'paid'                  => ['label' => 'Dibayar / Diproses', 'desc' => 'Pembayaran berhasil, pesanan sedang diproses penjual'],
                         'shipped'               => ['label' => 'Dibawa Kurir', 'desc' => 'Pesanan dalam perjalanan ke alamat Anda'],
                         'delivered'             => ['label' => 'Selesai', 'desc' => 'Pesanan telah diterima. Terima kasih!'],
@@ -137,13 +136,6 @@
                     <span wire:loading wire:target="checkPaymentStatus" class="flex items-center justify-center gap-2"><svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Mengecek...</span>
                 </button>
                 @endif
-            </div>
-            @elseif($order->status === 'waiting_shipping_cost')
-            <div class="bg-white rounded-2xl shadow-card p-5">
-                <div class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm flex items-start gap-2">
-                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <div><span class="font-semibold block mb-1">Menunggu Penjual Menentukan Ongkos Kirim</span>Silakan cek kembali nanti. Tombol bayar akan muncul setelah ongkir ditentukan.</div>
-                </div>
             </div>
             @elseif($order->status === 'paid')
             <div class="bg-white rounded-2xl shadow-card p-5">

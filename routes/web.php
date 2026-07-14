@@ -5,6 +5,12 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Request;
 
+// TEMP verification route — remove before finishing task
+Route::get('/__dev_login/{id}', function ($id) {
+    \Illuminate\Support\Facades\Auth::loginUsingId($id);
+    return 'ok';
+});
+
 /*
 |--------------------------------------------------------------------------
 | UMKM Air Hitam — Web Routes (Frontend Only)

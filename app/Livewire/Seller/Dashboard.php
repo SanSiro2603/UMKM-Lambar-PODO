@@ -42,7 +42,7 @@ class Dashboard extends Component
         $totalProducts = Product::where('store_id', $store->id)->count();
         
         $newOrders = Order::where('store_id', $store->id)
-            ->whereIn('status', ['waiting_shipping_cost', 'waiting_payment'])
+            ->where('status', 'waiting_payment')
             ->count();
             
         $revenue = Order::where('store_id', $store->id)
@@ -110,7 +110,6 @@ class Dashboard extends Component
             ->toArray();
 
         $statusLabels = [
-            'waiting_shipping_cost' => 'Menunggu Ongkir',
             'waiting_payment' => 'Menunggu Pembayaran',
             'paid' => 'Sudah Dibayar',
             'shipped' => 'Dikirim',

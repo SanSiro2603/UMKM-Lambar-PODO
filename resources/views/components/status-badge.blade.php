@@ -5,7 +5,6 @@
 @php
     $styles = [
         'keranjang' => 'bg-surface-100 text-surface-600',
-        'waiting_shipping_cost' => 'bg-purple-50 text-purple-700',
         'waiting_payment' => 'bg-amber-50 text-amber-700',
         'paid' => 'bg-green-50 text-green-700',
         'shipped' => 'bg-cyan-50 text-cyan-700',
@@ -27,7 +26,6 @@
 
     $labels = [
         'keranjang' => 'Keranjang',
-        'waiting_shipping_cost' => 'Menunggu Ongkir',
         'waiting_payment' => 'Menunggu Pembayaran',
         'paid' => 'Sudah Dibayar',
         'shipped' => 'Dikirim',
@@ -49,7 +47,6 @@
 
     $dotColors = [
         'keranjang' => 'bg-surface-400',
-        'waiting_shipping_cost' => 'bg-purple-500',
         'waiting_payment' => 'bg-amber-500',
         'paid' => 'bg-green-500',
         'shipped' => 'bg-cyan-500',

@@ -18,7 +18,7 @@
         {{-- LIST VIEW --}}
         @if($view === 'list')
             <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                @foreach(['semua' => 'Semua', 'waiting_shipping_cost' => 'Menunggu Ongkir', 'waiting_payment' => 'Menunggu Bayar', 'paid' => 'Dibayar', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
+                @foreach(['semua' => 'Semua', 'waiting_payment' => 'Menunggu Bayar', 'paid' => 'Dibayar', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
                     <button wire:click="selectTab('{{ $key }}')" class="px-4 py-2 rounded-xl text-sm font-medium border whitespace-nowrap transition-all {{ $statusTab === $key ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-surface-600 hover:bg-surface-50 border-surface-200' }}">{{ $label }}</button>
                 @endforeach
             </div>
@@ -82,7 +82,7 @@
                         <hr class="border-surface-100 my-4">
                         <div class="space-y-2 text-sm text-surface-600">
                             <div class="flex justify-between"><span>Subtotal Produk</span><span class="font-medium text-surface-800">Rp {{ number_format($order->total_price - ($order->shipping_cost ?? 0),0,',','.') }}</span></div>
-                            <div class="flex justify-between"><span>Ongkos Kirim</span><span class="font-medium text-surface-800">@if(is_null($order->shipping_cost))<span class="text-amber-600 italic">Belum ditentukan</span>@else Rp {{ number_format($order->shipping_cost,0,',','.') }}@endif</span></div>
+                            <div class="flex justify-between"><span>Ongkos Kirim @if($order->shipping_zone_label)<span class="text-xs text-surface-400">({{ $order->shipping_zone_label }})</span>@endif</span><span class="font-medium text-surface-800">Rp {{ number_format($order->shipping_cost,0,',','.') }}</span></div>
                             <hr class="border-surface-100 my-2">
                             <div class="flex justify-between font-bold text-surface-900 text-base"><span>Total Bayar</span><span class="text-primary-500">Rp {{ number_format($order->total_price,0,',','.') }}</span></div>
                         </div>
@@ -271,31 +271,11 @@
 
                     {{-- Actions --}}
                     <div class="space-y-3">
-                        {{-- Set Shipping Cost --}}
-                        @if(is_null($order->shipping_cost))
-                        <div class="bg-white rounded-2xl shadow-card p-5">
-                            <h3 class="font-heading font-bold text-surface-900 mb-2">Tentukan Ongkos Kirim</h3>
-                            <p class="text-xs text-surface-500 mb-4">Masukkan tarif pengiriman agar customer bisa melanjutkan pembayaran.</p>
-                            <form wire:submit.prevent="setShippingCost" class="space-y-3">
-                                <div>
-                                    <div class="relative rounded-xl shadow-sm">
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span class="text-surface-500 text-sm">Rp</span></div>
-                                        <input type="number" wire:model="inputShippingCost" placeholder="Contoh: 15000" class="w-full pl-9 pr-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">
-                                    </div>
-                                    @error('inputShippingCost') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
-                                </div>
-                                <button type="submit" class="w-full py-2.5 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-600 transition-all text-sm shadow-md">Simpan Ongkir</button>
-                            </form>
-                        </div>
-                        @endif
-
                         {{-- Status-based Actions --}}
                         <div class="bg-white rounded-2xl shadow-card p-5">
                             <h3 class="font-heading font-bold text-surface-900 mb-3">Tindakan</h3>
 
-                            @if(is_null($order->shipping_cost))
-                                <p class="text-sm text-surface-500 italic">Tentukan ongkos kirim terlebih dahulu.</p>
-                            @elseif($order->status === 'waiting_payment')
+                            @if($order->status === 'waiting_payment')
                                 <p class="text-sm text-surface-500">Menunggu customer melakukan pembayaran. Pembayaran akan terkonfirmasi otomatis setelah customer selesai bayar.</p>
                             @elseif($order->status === 'paid')
                                 <p class="text-xs text-surface-500 mb-4">Pembayaran sudah dikonfirmasi. Tugaskan kurir untuk mengantar pesanan ini — link pelacakan akan dikirim otomatis via WhatsApp.</p>

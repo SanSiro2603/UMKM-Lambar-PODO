@@ -16,9 +16,22 @@ return new class extends Migration
             $table->unsignedInteger('total_price');
             $table->unsignedInteger('shipping_cost')->nullable();
             $table->text('shipping_address');
-            $table->enum('payment_method', ['transfer', 'cod']);
+            $table->enum('payment_method', ['transfer', 'xendit', 'cod']);
             $table->enum('payment_status', ['unpaid', 'paid', 'verified', 'failed'])->default('unpaid');
-            $table->enum('status', ['pending', 'menunggu_validasi', 'diproses', 'dikirim', 'selesai', 'dibatalkan'])->default('pending');
+            $table->enum('status', [
+                'pending',
+                'menunggu_validasi',
+                'diproses',
+                'dikirim',
+                'selesai',
+                'dibatalkan',
+                'waiting_shipping_cost',
+                'waiting_payment',
+                'paid',
+                'shipped',
+                'delivered',
+                'cancelled',
+            ])->default('pending');
             $table->string('proof_of_transfer')->nullable();
             $table->timestamps();
         });

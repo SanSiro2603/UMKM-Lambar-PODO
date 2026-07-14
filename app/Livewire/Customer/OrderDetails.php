@@ -231,10 +231,10 @@ class OrderDetails extends Component
         }
     }
 
-    /** Batalkan order — hanya status waiting_shipping_cost atau waiting_payment */
+    /** Batalkan order — hanya status waiting_payment */
     public function cancelOrder()
     {
-        if (! in_array($this->order->status, ['waiting_shipping_cost', 'waiting_payment'])) {
+        if ($this->order->status !== 'waiting_payment') {
             session()->flash('error', 'Pesanan tidak dapat dibatalkan.');
             return;
         }

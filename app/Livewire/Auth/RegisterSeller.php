@@ -42,8 +42,8 @@ class RegisterSeller extends Component
         'bank_account_name' => 'required|string|max:100',
         'password' => 'required|string|min:8',
         'terms' => 'accepted',
-        'districtCode' => 'required|string|exists:districts,code',
-        'villageCode' => 'required|string|exists:villages,code',
+        'districtCode' => 'required|string|exists:indonesia_districts,code',
+        'villageCode' => 'required|string|exists:indonesia_villages,code',
         'detailAddress' => 'required|string|min:5|max:200',
     ];
 
@@ -123,6 +123,7 @@ class RegisterSeller extends Component
             'email' => $this->email,
             'phone' => $this->phone,
             'address' => $fullAddress,
+            'district_code' => $this->districtCode,
             'password' => Hash::make($this->password),
         ]);
         $user->forceFill(['role' => 'seller'])->save();
@@ -133,6 +134,7 @@ class RegisterSeller extends Component
             'slug' => Str::slug($this->store_name) . '-' . rand(100, 999),
             'description' => $this->description,
             'address' => $fullAddress,
+            'district_code' => $this->districtCode,
             'bank_name' => $this->bank_code,
             'bank_code' => $this->bank_code,
             'bank_account_name' => $this->bank_account_name,

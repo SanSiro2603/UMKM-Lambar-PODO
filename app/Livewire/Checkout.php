@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\ShippingZoneCalculator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -61,7 +62,7 @@ class Checkout extends Component
             // 🔒 SECURITY FIX: Check all active orders, not just 5-minute window (ISSUE-014)
             $recentOrders = Order::where('customer_id', $user->id)
                 ->where('store_id', $storeId)
-                ->whereIn('status', ['waiting_shipping_cost', 'waiting_payment', 'paid', 'shipped'])
+                ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
                 ->with('items')
                 ->get();
 
@@ -120,7 +121,7 @@ class Checkout extends Component
                     ];
                 }
             }
-            return $groups;
+            return $this->applyShipping($groups);
         }
 
         // Fetch selected items from DB
@@ -160,6 +161,22 @@ class Checkout extends Component
                 
                 $groups[$storeId]['subtotal'] += $subtotal;
             }
+        }
+
+        return $this->applyShipping($groups);
+    }
+
+    /** Hitung ongkir otomatis tiap grup toko berdasarkan zona kecamatan toko vs pembeli */
+    private function applyShipping(array $groups): array
+    {
+        $calculator = app(ShippingZoneCalculator::class);
+        $buyerDistrictCode = Auth::user()->district_code ?? null;
+
+        foreach ($groups as $storeId => $data) {
+            $groups[$storeId]['shipping'] = $calculator->calculate(
+                $data['store']->district_code ?? null,
+                $buyerDistrictCode
+            );
         }
 
         return $groups;
@@ -220,8 +237,9 @@ class Checkout extends Component
                 }
 
                 foreach ($grouped as $storeId => $data) {
-                    $totalPrice = $data['subtotal'];
                     $paymentMethod = $this->paymentMethods[$storeId] ?? 'xendit';
+                    $shipping = $data['shipping'];
+                    $totalPrice = $data['subtotal'] + $shipping['cost'];
                     $orderCode = 'ORD-' . date('Ymd') . '-' . strtoupper(Str::random(4));
 
                     $order = Order::create([
@@ -229,12 +247,15 @@ class Checkout extends Component
                         'customer_id' => Auth::id(),
                         'store_id' => $storeId,
                         'total_price' => $totalPrice,
-                        'shipping_cost' => null,
+                        'shipping_cost' => $shipping['cost'],
+                        'shipping_zone_label' => $shipping['label'],
                         'shipping_address' => $this->shippingAddress,
                         'shipping_phone' => $this->shippingPhone,
                         'payment_method' => $paymentMethod,
                         'payment_status' => 'unpaid',
-                        'status' => 'waiting_shipping_cost',
+                        // Pesanan COD langsung siap diproses; Xendit langsung menunggu pembayaran
+                        // (ongkir sudah otomatis terhitung, tidak ada lagi status waiting_shipping_cost).
+                        'status' => $paymentMethod === 'cod' ? 'paid' : 'waiting_payment',
                     ]);
 
                     foreach ($data['items'] as $item) {
@@ -273,7 +294,7 @@ class Checkout extends Component
                 }
             });
 
-            session()->flash('success', 'Pesanan berhasil dibuat! Menunggu penjual menentukan ongkos kirim.');
+            session()->flash('success', 'Pesanan berhasil dibuat!');
             return redirect()->route('customer.orders');
 
         } catch (\Exception $e) {

@@ -93,9 +93,17 @@
                             @endif
                         </div>
 
-                        <div class="flex justify-between text-sm font-semibold text-surface-800 pt-2">
+                        <div class="flex justify-between text-sm text-surface-600">
                             <span>Subtotal Toko</span>
                             <span>Rp {{ number_format($data['subtotal'], 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-surface-600">
+                            <span>+ Ongkir <span class="text-xs text-surface-400">({{ $data['shipping']['label'] }})</span></span>
+                            <span>Rp {{ number_format($data['shipping']['cost'], 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-semibold text-surface-800 pt-2 border-t border-surface-100">
+                            <span>Total Toko Ini</span>
+                            <span>Rp {{ number_format($data['subtotal'] + $data['shipping']['cost'], 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -113,10 +121,12 @@
 
                 @php
                     $subtotal = 0;
+                    $totalOngkir = 0;
                     foreach($grouped as $storeId => $data) {
                         $subtotal += $data['subtotal'];
+                        $totalOngkir += $data['shipping']['cost'];
                     }
-                    $total = $subtotal;
+                    $total = $subtotal + $totalOngkir;
                 @endphp
 
                 <div class="space-y-3 text-sm">
@@ -125,15 +135,14 @@
                         <span>Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-surface-600">
-                        <span>Ongkos Kirim</span>
-                        <span class="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Menunggu Konfirmasi</span>
+                        <span>+ Ongkos Kirim</span>
+                        <span>Rp {{ number_format($totalOngkir, 0, ',', '.') }}</span>
                     </div>
                     <hr class="border-surface-100">
                     <div class="flex justify-between font-bold text-surface-900 text-lg">
                         <span>Total Belanja</span>
                         <span class="text-primary-500">Rp {{ number_format($total, 0, ',', '.') }}</span>
                     </div>
-                    <p class="text-[10px] text-surface-500 italic mt-1 text-right">*Belum termasuk ongkos kirim (akan diisi oleh penjual setelah pesanan dibuat).</p>
                 </div>
                 <button wire:click="placeOrder" wire:loading.attr="disabled" class="mt-5 w-full flex items-center justify-center gap-2 py-3 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-600 transition-all hover:shadow-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                     <span wire:loading.remove wire:target="placeOrder">Konfirmasi Pesanan</span>

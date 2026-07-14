@@ -135,7 +135,10 @@ class Dashboard extends Component
             . ', Kabupaten Lampung Barat';
 
         $user = Auth::user();
-        $user->update(['address' => $fullAddress]);
+        $user->update([
+            'address' => $fullAddress,
+            'district_code' => $this->selectedDistrictCode,
+        ]);
 
         $this->kecamatan = $district->name;
         $this->kelurahan = $village->name;
@@ -152,7 +155,7 @@ class Dashboard extends Component
         }
 
         $pesananAktif = Order::where('customer_id', $user->id)
-            ->whereIn('status', ['waiting_shipping_cost', 'waiting_payment', 'paid', 'shipped'])
+            ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
             ->count();
 
         $pesananSelesai = Order::where('customer_id', $user->id)

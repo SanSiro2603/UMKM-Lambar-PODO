@@ -16,6 +16,7 @@ class Store extends Model
         'slug',
         'description',
         'address',
+        'district_code',
         'bank_name',
         'bank_code',
         'bank_account_no',
