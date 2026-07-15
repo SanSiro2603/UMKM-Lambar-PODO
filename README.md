@@ -1,58 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# UMKM Lampung Barat
 
-## About Laravel
+### Marketplace digital untuk produk lokal dan kebutuhan pertanian Lampung Barat
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+[![PHP](https://img.shields.io/badge/PHP-8.3-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![Livewire](https://img.shields.io/badge/Livewire-4-FB70A9?logo=livewire&logoColor=white)](https://livewire.laravel.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Mendukung pelaku UMKM dalam memasarkan produk, mengelola pesanan, menerima pembayaran, dan mengatur pengantaran melalui satu platform terintegrasi.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+[Tentang](#tentang-aplikasi) · [Fitur](#fitur-berdasarkan-aktor) · [Alur Transaksi](#alur-transaksi) · [Tech Stack](#tech-stack)
 
-## Learning Laravel
+</div>
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Tentang Aplikasi
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+**UMKM Lampung Barat** adalah platform marketplace yang mempertemukan masyarakat dengan pelaku UMKM lokal di Kabupaten Lampung Barat. Produk yang tersedia mencakup hasil bumi, produk lokal, agrokimia, pupuk, benih, perlengkapan tani, serta alat dan suku cadang pertanian.
 
-## Agentic Development
+Platform menangani proses belanja dari pencarian produk hingga pesanan diterima. Ongkos kirim dihitung otomatis berdasarkan zona kecamatan, pembayaran dapat dilakukan melalui COD atau invoice Xendit, dan posisi kurir dapat dipantau secara realtime selama pengantaran.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Fitur Berdasarkan Aktor
 
-```bash
-composer require laravel/boost --dev
+| Aktor | Akses | Fokus Utama |
+| --- | --- | --- |
+| **Pengunjung** | Tanpa akun | Menjelajahi katalog produk, kategori, dan toko UMKM. |
+| **Pelanggan** | Akun pelanggan | Berbelanja, membayar, memantau pesanan, dan memberikan ulasan. |
+| **Penjual** | Akun penjual terverifikasi | Mengelola toko, produk, pesanan, kurir, rekening, dan laporan. |
+| **Admin** | Akun administrator | Memverifikasi penjual, mengelola platform, dan memantau transaksi. |
+| **Kurir** | Tautan sekali pakai | Membagikan lokasi dan menyelesaikan proses pengantaran tanpa akun. |
 
-php artisan boost:install
+### Pengunjung dan Pelanggan
+
+- Menjelajahi dan mencari produk berdasarkan nama, kategori, atau toko.
+- Melihat detail produk, stok, harga, jumlah terjual, rating, dan informasi toko.
+- Mengelola keranjang atau menggunakan fitur **Beli Sekarang**.
+- Checkout produk dari satu atau beberapa toko dengan pesanan terpisah per toko.
+- Mendapatkan perhitungan ongkos kirim otomatis berdasarkan zona kecamatan toko dan pelanggan.
+- Memilih pembayaran **COD** atau invoice digital melalui **Xendit**.
+- Melihat riwayat, detail, pembayaran, dan perubahan status pesanan.
+- Memantau lokasi kurir secara realtime ketika pengantaran sedang aktif.
+- Memberikan rating dan ulasan setelah pesanan selesai.
+
+### Penjual
+
+- Mendaftarkan usaha dan menunggu persetujuan admin sebelum mulai berjualan.
+- Mengelola profil toko, foto, produk, kategori, harga, dan ketersediaan stok.
+- Menerima serta memproses pesanan pelanggan melalui dashboard penjual.
+- Menugaskan kurir dan mengirimkan tautan pengantaran melalui WhatsApp.
+- Memperbarui data kurir dengan otomatis mengganti tautan akses sebelumnya.
+- Mengelola rekening bank dan status verifikasinya untuk pencairan dana.
+- Menerima notifikasi pesanan dan perubahan status secara realtime.
+- Melihat statistik penjualan serta mengunduh laporan dalam format PDF.
+
+### Admin
+
+- Memantau jumlah penjual, pelanggan, pesanan, transaksi, dan pendapatan platform.
+- Meninjau dan menyetujui atau menolak pendaftaran toko.
+- Memverifikasi informasi rekening bank milik penjual.
+- Mengelola kategori yang digunakan pada katalog produk.
+- Memantau transaksi dan performa penjual berdasarkan periode laporan.
+- Mengunduh laporan kinerja platform dalam format PDF.
+
+### Kurir
+
+- Membuka detail pengantaran melalui tautan rahasia sekali pakai tanpa registrasi akun.
+- Melihat informasi tujuan dan kontak penerima pesanan.
+- Mengaktifkan pelacakan lalu mengirimkan pembaruan lokasi selama perjalanan.
+- Menandai pengantaran selesai; tautan akan otomatis dinonaktifkan setelah digunakan.
+- Mengonfirmasi penerimaan pembayaran ketika mengantarkan pesanan COD.
+
+## Alur Transaksi
+
+```mermaid
+flowchart LR
+    A["Pelanggan memilih produk"] --> B["Checkout dan ongkir otomatis"]
+    B --> C{"Metode pembayaran"}
+    C -->|Xendit| D["Pembayaran terverifikasi"]
+    C -->|COD| E["Bayar saat diterima"]
+    D --> F["Penjual memproses pesanan"]
+    E --> F
+    F --> G["Kurir menerima tautan akses"]
+    G --> H["Lokasi dikirim realtime"]
+    H --> I["Pesanan diterima"]
+    I --> J["Pelanggan memberi rating"]
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Pembayaran digital diverifikasi melalui webhook Xendit. Setelah pembayaran berhasil, sistem mencatat transaksi dan menjalankan proses pencairan dana ke rekening penjual. Untuk COD, status pembayaran diperbarui ketika pengantaran diselesaikan.
 
-## Contributing
+## Tech Stack
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Bagian | Teknologi | Kegunaan |
+| --- | --- | --- |
+| **Backend** | PHP 8.3, Laravel 13 | Logika aplikasi, autentikasi, otorisasi, dan pengelolaan data. |
+| **UI interaktif** | Livewire 4, Blade, Alpine.js | Antarmuka reaktif tanpa membangun SPA terpisah. |
+| **Styling** | Tailwind CSS 4 | Sistem desain dan tampilan responsif. |
+| **Build tool** | Vite 8 | Pengembangan dan bundling aset frontend. |
+| **Realtime** | Laravel Reverb, Laravel Echo, Pusher.js | Notifikasi pesanan dan pembaruan lokasi kurir. |
+| **Database** | MySQL | Database relasional untuk pengembangan; konfigurasi Laravel juga menyediakan koneksi database lainnya. |
+| **Pembayaran** | Xendit PHP SDK | Invoice pembayaran, webhook, verifikasi rekening, dan pencairan dana. |
+| **Laporan** | DomPDF | Pembuatan laporan penjualan dan platform dalam format PDF. |
+| **Data wilayah** | Laravolt Indonesia | Referensi wilayah untuk alamat dan zona pengiriman. |
+| **Pengujian** | PHPUnit 12 | Pengujian fitur, perhitungan ongkir, checkout, dan kompatibilitas tampilan. |
 
-## Code of Conduct
+## Cakupan Layanan
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Pengiriman saat ini ditujukan untuk wilayah **Kabupaten Lampung Barat**. Perhitungan ongkos kirim menggunakan hubungan zona kecamatan, dengan tarif berbeda untuk kecamatan yang sama, kecamatan berdekatan, dan wilayah yang lebih jauh.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+<div align="center">
 
-## License
+**UMKM Lampung Barat** — Belanja lokal, dukung usaha masyarakat Lampung Barat.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+</div>
