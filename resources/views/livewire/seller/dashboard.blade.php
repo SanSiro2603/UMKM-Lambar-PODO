@@ -234,6 +234,14 @@
         @push('scripts')
         <script>
             (function () {
+                // Singkat angka Rupiah supaya label chart tidak bertabrakan
+                function fmtRp(value) {
+                    if (value >= 1000000000) return 'Rp ' + (value / 1000000000).toFixed(1).replace(/\.0$/, '') + 'M';
+                    if (value >= 1000000)    return 'Rp ' + (value / 1000000).toFixed(1).replace(/\.0$/, '') + 'jt';
+                    if (value >= 1000)       return 'Rp ' + Math.round(value / 1000) + 'rb';
+                    return 'Rp ' + value;
+                }
+
                 const salesChartEl = document.querySelector("#sales-chart");
                 if (salesChartEl) {
                     salesChartEl.innerHTML = '';
@@ -267,10 +275,9 @@
                             }
                         },
                         yaxis: {
+                            tickAmount: 5,
                             labels: {
-                                formatter: function (value) {
-                                    return "Rp " + new Intl.NumberFormat('id-ID').format(value);
-                                },
+                                formatter: fmtRp,
                                 style: { colors: '#757575', fontFamily: 'Outfit' }
                             }
                         },
@@ -356,16 +363,19 @@
                         dataLabels: { enabled: false },
                         xaxis: {
                             categories: @json($topProductLabels),
+                            tickAmount: 5,
                             labels: {
                                 formatter: function (value) {
                                     return new Intl.NumberFormat('id-ID').format(value);
                                 },
-                                style: { colors: '#757575', fontFamily: 'Outfit' }
+                                style: { colors: '#757575', fontFamily: 'Outfit' },
+                                rotate: 0
                             }
                         },
                         yaxis: {
                             labels: {
-                                style: { colors: '#424242', fontFamily: 'Outfit' }
+                                maxWidth: 130,
+                                style: { colors: '#424242', fontFamily: 'Outfit', fontSize: '11px' }
                             }
                         },
                         grid: { borderColor: '#eeeeee' },
@@ -405,16 +415,17 @@
                         dataLabels: { enabled: false },
                         xaxis: {
                             categories: @json($topRevenueProductLabels),
+                            tickAmount: 5,
                             labels: {
-                                formatter: function (value) {
-                                    return "Rp " + new Intl.NumberFormat('id-ID').format(value);
-                                },
-                                style: { colors: '#757575', fontFamily: 'Outfit' }
+                                formatter: fmtRp,
+                                style: { colors: '#757575', fontFamily: 'Outfit' },
+                                rotate: 0
                             }
                         },
                         yaxis: {
                             labels: {
-                                style: { colors: '#424242', fontFamily: 'Outfit' }
+                                maxWidth: 130,
+                                style: { colors: '#424242', fontFamily: 'Outfit', fontSize: '11px' }
                             }
                         },
                         grid: { borderColor: '#eeeeee' },

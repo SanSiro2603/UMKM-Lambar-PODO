@@ -5,12 +5,6 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Http\Request;
 
-// TEMP verification route — remove before finishing task
-Route::get('/__dev_login/{id}', function ($id) {
-    \Illuminate\Support\Facades\Auth::loginUsingId($id);
-    return 'ok';
-});
-
 /*
 |--------------------------------------------------------------------------
 | UMKM Air Hitam — Web Routes (Frontend Only)
@@ -37,6 +31,8 @@ Route::middleware(['throttle:public'])->group(function() {
     Route::get('/', function() {
         $categories = \App\Models\Category::limit(6)->get();
         $products = \App\Models\Product::with(['category', 'store'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->withSoldQuantity()
             ->whereHas('store', function($q) {
             $q->where('status', 'approved');

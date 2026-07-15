@@ -95,7 +95,18 @@
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             @foreach($products as $prod)
-                <x-product-card :name="$prod->name" :price="$prod->price" :category="$prod->category ? $prod->category->name : ''" :seller="$prod->store ? $prod->store->name : ''" :sold="$prod->sold_quantity" :slug="$prod->slug" :sellerSlug="$prod->store ? $prod->store->slug : ''" :image="$prod->image ? asset('storage/' . $prod->image) : null" />
+                <x-product-card
+                    :name="$prod->name"
+                    :price="$prod->price"
+                    :category="$prod->category ? $prod->category->name : ''"
+                    :seller="$prod->store ? $prod->store->name : ''"
+                    :sold="$prod->sold_quantity"
+                    :slug="$prod->slug"
+                    :sellerSlug="$prod->store ? $prod->store->slug : ''"
+                    :image="$prod->image ? asset('storage/' . $prod->image) : null"
+                    :avgRating="round($prod->ratings_avg_rating ?? 0, 1)"
+                    :ratingCount="$prod->ratings_count ?? 0"
+                />
             @endforeach
         </div>
 

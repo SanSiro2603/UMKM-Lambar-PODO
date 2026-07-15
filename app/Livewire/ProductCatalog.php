@@ -53,6 +53,8 @@ class ProductCatalog extends Component
     public function render()
     {
         $query = Product::with(['category', 'store'])
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->withSoldQuantity()
             ->whereHas('store', function($q) {
             $q->where('status', 'approved');

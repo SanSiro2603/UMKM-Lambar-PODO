@@ -19,6 +19,8 @@ class StoreDetail extends Component
         $store = Store::where('slug', $this->slug)->where('status', 'approved')->firstOrFail();
         $products = $store->products()
             ->with('category')
+            ->withAvg('ratings', 'rating')
+            ->withCount('ratings')
             ->withSoldQuantity()
             ->latest()
             ->get();
