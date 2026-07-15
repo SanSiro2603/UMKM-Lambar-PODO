@@ -7,7 +7,9 @@ use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class CartPage extends Component
 {
     public function mount()
@@ -121,14 +123,14 @@ class CartPage extends Component
     {
         $items = collect($this->groupedBySeller[$storeName] ?? []);
         $itemIds = $items->pluck('id')->toArray();
-        CartItem::whereIn('id', $itemIds)->update(['selected' => true]);
+        CartItem::query()->whereIn('id', $itemIds)->update(['selected' => true]);
     }
 
     public function deselectAllForSeller($storeName)
     {
         $items = collect($this->groupedBySeller[$storeName] ?? []);
         $itemIds = $items->pluck('id')->toArray();
-        CartItem::whereIn('id', $itemIds)->update(['selected' => false]);
+        CartItem::query()->whereIn('id', $itemIds)->update(['selected' => false]);
     }
 
     public function checkout()
@@ -145,6 +147,6 @@ class CartPage extends Component
 
     public function render()
     {
-        return view('livewire.cart-page')->extends('layouts.app')->section('content');
+        return view('livewire.cart-page');
     }
 }

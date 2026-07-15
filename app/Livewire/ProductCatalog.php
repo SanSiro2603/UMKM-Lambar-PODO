@@ -4,10 +4,12 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use App\Models\Product;
 use App\Models\Category;
 
+#[Layout('layouts.app')]
 class ProductCatalog extends Component
 {
     use WithPagination;
@@ -108,6 +110,6 @@ class ProductCatalog extends Component
         return view('livewire.product-catalog', [
             'products' => $products,
             'categoriesList' => $categoriesList
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }

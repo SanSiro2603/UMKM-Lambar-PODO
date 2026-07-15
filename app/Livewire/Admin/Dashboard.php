@@ -3,11 +3,13 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Store;
 use App\Models\Product;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 
+#[Layout('layouts.dashboard')]
 class Dashboard extends Component
 {
     public function approveSeller(int $id)
@@ -36,18 +38,18 @@ class Dashboard extends Component
             abort(403);
         }
 
-        $totalSellers = Store::where('status', 'approved')->count();
+        $totalSellers = Store::query()->where('status', 'approved')->count();
         $totalProducts = Product::count();
-        $totalOrders = Order::whereNotIn('status', ['cancelled'])->count();
+        $totalOrders = Order::query()->whereNotIn('status', ['cancelled'])->count();
 
         // Revenue: dari Transaction (platform fee) + Order yg COD/selesai
-        $platformRevenue = \App\Models\Transaction::where('status', 'disbursed')->sum('platform_fee');
-        $totalOmzet = Order::whereIn('status', ['paid', 'shipped', 'delivered'])->sum('total_price');
+        $platformRevenue = \App\Models\Transaction::query()->where('status', 'disbursed')->sum('platform_fee');
+        $totalOmzet = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered'])->sum('total_price');
         $revenue = $platformRevenue; // platform actual income
 
         // Split payment summary
-        $totalDisbursed = \App\Models\Transaction::where('status', 'disbursed')->sum('seller_amount');
-        $pendingDisbursement = \App\Models\Transaction::where('status', 'paid')->sum('seller_amount');
+        $totalDisbursed = \App\Models\Transaction::query()->where('status', 'disbursed')->sum('seller_amount');
+        $pendingDisbursement = \App\Models\Transaction::query()->where('status', 'paid')->sum('seller_amount');
 
         $pendingSellers = Store::with('user')
             ->where('status', 'pending')
@@ -56,7 +58,7 @@ class Dashboard extends Component
             ->get();
 
         // 1. Leaderboard Toko Terlaris (Top Stores by Revenue)
-        $topStores = Order::whereIn('status', ['paid', 'shipped', 'delivered'])
+        $topStores = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered'])
             ->selectRaw('store_id, SUM(total_price) as total_revenue, COUNT(*) as total_sales')
             ->groupBy('store_id')
             ->orderByDesc('total_revenue')
@@ -94,7 +96,7 @@ class Dashboard extends Component
         $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
         for ($m = 1; $m <= 12; $m++) {
-            $count = Order::whereMonth('created_at', $m)
+            $count = Order::query()->whereMonth('created_at', $m)
                 ->whereYear('created_at', now()->year)
                 ->whereNotIn('status', ['cancelled'])
                 ->count();
@@ -118,6 +120,6 @@ class Dashboard extends Component
             'categoryValues' => $categoryValues,
             'chartMonths' => $months,
             'chartOrders' => $monthlyOrders,
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 }

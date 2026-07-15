@@ -3,12 +3,14 @@
 namespace App\Livewire\Seller;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use App\Models\Order;
 use App\Events\OrderStatusUpdated;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
+#[Layout('layouts.dashboard')]
 class Orders extends Component
 {
     public string $view = 'list';
@@ -50,7 +52,7 @@ class Orders extends Component
         $this->validateCourierInput();
 
         $store = Auth::user()->store;
-        $order = Order::where('store_id', $store->id)
+        $order = Order::query()->where('store_id', $store->id)
                       ->where('id', $this->orderId)
                       ->firstOrFail();
 
@@ -69,7 +71,7 @@ class Orders extends Component
     public function editCourierAccess(): void
     {
         $store = Auth::user()->store;
-        $order = Order::where('store_id', $store->id)
+        $order = Order::query()->where('store_id', $store->id)
                       ->where('id', $this->orderId)
                       ->firstOrFail();
 
@@ -96,7 +98,7 @@ class Orders extends Component
         $this->validateCourierInput();
 
         $store = Auth::user()->store;
-        $order = Order::where('store_id', $store->id)
+        $order = Order::query()->where('store_id', $store->id)
                       ->where('id', $this->orderId)
                       ->firstOrFail();
 
@@ -172,7 +174,7 @@ class Orders extends Component
     public function completeOrder(): void
     {
         $store = Auth::user()->store;
-        $order = Order::where('store_id', $store->id)
+        $order = Order::query()->where('store_id', $store->id)
                       ->where('id', $this->orderId)
                       ->firstOrFail();
 
@@ -202,8 +204,7 @@ class Orders extends Component
                 ->where('store_id', $store->id)
                 ->findOrFail($this->orderId);
 
-            return view('livewire.seller.orders', compact('order', 'store'))
-                ->extends('layouts.dashboard')->section('content');
+            return view('livewire.seller.orders', compact('order', 'store'));
         }
 
         $query = Order::with('customer')
@@ -215,7 +216,6 @@ class Orders extends Component
 
         $orders = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return view('livewire.seller.orders', compact('orders', 'store'))
-            ->extends('layouts.dashboard')->section('content');
+        return view('livewire.seller.orders', compact('orders', 'store'));
     }
 }

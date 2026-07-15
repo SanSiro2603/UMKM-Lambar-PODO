@@ -11,7 +11,9 @@ use App\Services\XenditService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class OrderDetails extends Component
 {
     public Order $order;
@@ -32,7 +34,7 @@ class OrderDetails extends Component
 
         // Inisialisasi rating inputs
         foreach ($this->order->items as $item) {
-            $existing = Rating::where('user_id', $user->id)
+            $existing = Rating::query()->where('user_id', $user->id)
                 ->where('product_id', $item->product_id)
                 ->where('order_id', $this->order->id)
                 ->first();
@@ -55,7 +57,7 @@ class OrderDetails extends Component
     /** Cek apakah user sudah memberi rating untuk product tertentu di order ini */
     public function hasRated(int $productId): bool
     {
-        return Rating::where('user_id', Auth::id())
+        return Rating::query()->where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->where('order_id', $this->order->id)
             ->exists();
@@ -108,8 +110,8 @@ class OrderDetails extends Component
         ]);
 
         // Update rating field di product (nilai rata-rata)
-        $avg = round(Rating::where('product_id', $productId)->avg('rating') ?? 0, 1);
-        Product::where('id', $productId)->update(['rating' => $avg]);
+        $avg = round(Rating::query()->where('product_id', $productId)->avg('rating') ?? 0, 1);
+        Product::query()->where('id', $productId)->update(['rating' => $avg]);
 
         session()->flash('success', 'Terima kasih! Rating berhasil dikirim.');
         $this->order->refresh();
@@ -126,7 +128,7 @@ class OrderDetails extends Component
         }
 
         // Cek transaksi pending
-        $existing = Transaction::where('order_id', $this->order->id)
+        $existing = Transaction::query()->where('order_id', $this->order->id)
             ->where('status', 'pending')
             ->first();
 
@@ -176,7 +178,7 @@ class OrderDetails extends Component
     /** Manual check invoice status — fallback saat webhook Xendit tidak tembus localhost */
     public function checkPaymentStatus(XenditService $xendit): void
     {
-        $transaction = Transaction::where('order_id', $this->order->id)
+        $transaction = Transaction::query()->where('order_id', $this->order->id)
             ->whereNotNull('xendit_invoice_id')
             ->latest()
             ->first();
@@ -283,6 +285,6 @@ class OrderDetails extends Component
 
     public function render()
     {
-        return view('livewire.customer.order-details')->extends('layouts.app')->section('content');
+        return view('livewire.customer.order-details');
     }
 }

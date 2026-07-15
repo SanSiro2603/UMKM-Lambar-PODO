@@ -3,9 +3,12 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Store;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
+#[Layout('layouts.dashboard')]
 class Sellers extends Component
 {
     public string $view = 'list'; // 'list' or 'show'
@@ -34,7 +37,7 @@ class Sellers extends Component
         $store = Store::findOrFail($this->storeId);
         
         // 🔒 SECURITY FIX: Audit logging (ISSUE-013)
-        \Log::info('Store approved by admin', [
+        Log::info('Store approved by admin', [
             'admin_id' => Auth::id(),
             'admin_email' => Auth::user()->email,
             'store_id' => $store->id,
@@ -61,7 +64,7 @@ class Sellers extends Component
         $store = Store::findOrFail($this->storeId);
         
         // 🔒 SECURITY FIX: Audit logging (ISSUE-013)
-        \Log::warning('Store rejected by admin', [
+        Log::warning('Store rejected by admin', [
             'admin_id' => Auth::id(),
             'admin_email' => Auth::user()->email,
             'store_id' => $store->id,
@@ -90,7 +93,7 @@ class Sellers extends Component
             $store = Store::with(['user', 'paymentMethods'])->findOrFail($this->storeId);
             return view('livewire.admin.sellers', [
                 'store' => $store
-            ])->extends('layouts.dashboard')->section('content');
+            ]);
         }
 
         $query = Store::with('user');
@@ -103,6 +106,6 @@ class Sellers extends Component
 
         return view('livewire.admin.sellers', [
             'stores' => $stores
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 }

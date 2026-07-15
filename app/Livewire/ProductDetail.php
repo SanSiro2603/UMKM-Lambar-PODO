@@ -3,9 +3,11 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
+#[Layout('layouts.app')]
 class ProductDetail extends Component
 {
     public string $slug;
@@ -25,7 +27,7 @@ class ProductDetail extends Component
             $q->where('status', 'approved');
         })->firstOrFail();
 
-        $relatedProducts = Product::where('category_id', $product->category_id)
+        $relatedProducts = Product::query()->where('category_id', $product->category_id)
             ->withSoldQuantity()
             ->where('id', '!=', $product->id)
             ->whereHas('store', function($q) {
@@ -37,7 +39,7 @@ class ProductDetail extends Component
         return view('livewire.product-detail', [
             'product' => $product,
             'relatedProducts' => $relatedProducts
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 
     public function addToCart()
@@ -47,7 +49,7 @@ class ProductDetail extends Component
             return;
         }
 
-        $product = Product::where('slug', $this->slug)
+        $product = Product::query()->where('slug', $this->slug)
             ->whereHas('store', function($q) {
                 $q->where('status', 'approved');
             })
@@ -86,7 +88,7 @@ class ProductDetail extends Component
             return;
         }
 
-        $product = Product::where('slug', $this->slug)
+        $product = Product::query()->where('slug', $this->slug)
             ->whereHas('store', function($q) {
                 $q->where('status', 'approved');
             })

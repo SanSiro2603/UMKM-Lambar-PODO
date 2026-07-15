@@ -247,7 +247,11 @@
     {{-- MAIN CONTENT --}}
     {{-- ============================================ --}}
     <main class="flex-1">
-        @yield('content')
+        @isset($slot)
+            {{ $slot }}
+        @else
+            @yield('content')
+        @endisset
     </main>
 
     {{-- ============================================ --}}

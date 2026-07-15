@@ -17,7 +17,11 @@
             </div>
             <span class="font-heading font-bold text-white text-sm">Halaman Kurir — UMKM Lampung Barat</span>
         </header>
-        @yield('content')
+        @isset($slot)
+            {{ $slot }}
+        @else
+            @yield('content')
+        @endisset
     </div>
 </body>
 </html>

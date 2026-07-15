@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use App\Models\Store;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+#[Layout('layouts.dashboard')]
 class StoreProfile extends Component
 {
     use WithFileUploads;
@@ -80,7 +82,7 @@ class StoreProfile extends Component
             // Regenerate slug dynamically if the name changed
             if ($this->name !== $this->store->name) {
                 $slug = Str::slug($this->name);
-                if (Store::where('slug', $slug)->where('id', '!=', $this->store->id)->exists()) {
+                if (Store::query()->where('slug', $slug)->where('id', '!=', $this->store->id)->exists()) {
                     $slug = $slug . '-' . $this->store->id;
                 }
                 $updateData['slug'] = $slug;
@@ -160,8 +162,6 @@ class StoreProfile extends Component
 
     public function render()
     {
-        return view('livewire.seller.store-profile')
-            ->extends('layouts.dashboard')
-            ->section('content');
+        return view('livewire.seller.store-profile');
     }
 }

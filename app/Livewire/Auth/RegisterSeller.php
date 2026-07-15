@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\User;
 use App\Models\Store;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +11,7 @@ use Illuminate\Support\Str;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
 
+#[Layout('layouts.auth')]
 class RegisterSeller extends Component
 {
     public string $store_name = '';
@@ -60,14 +62,14 @@ class RegisterSeller extends Component
 
     public function mount(): void
     {
-        $this->districts = District::where('city_code', '1804')
+        $this->districts = District::query()->where('city_code', '1804')
             ->orderBy('name')
             ->get()
             ->map(fn($d) => ['code' => $d->code, 'name' => $d->name])
             ->toArray();
 
         if ($this->districtCode) {
-            $this->villages = Village::where('district_code', $this->districtCode)
+            $this->villages = Village::query()->where('district_code', $this->districtCode)
                 ->orderBy('name')
                 ->get()
                 ->map(fn($v) => ['code' => $v->code, 'name' => $v->name])
@@ -84,7 +86,7 @@ class RegisterSeller extends Component
             return;
         }
 
-        $this->villages = Village::where('district_code', $value)
+        $this->villages = Village::query()->where('district_code', $value)
             ->orderBy('name')
             ->get()
             ->map(fn($v) => ['code' => $v->code, 'name' => $v->name])
@@ -105,8 +107,8 @@ class RegisterSeller extends Component
     {
         $this->validate();
 
-        $district = District::where('code', $this->districtCode)->where('city_code', '1804')->first();
-        $village = Village::where('code', $this->villageCode)->where('district_code', $this->districtCode)->first();
+        $district = District::query()->where('code', $this->districtCode)->where('city_code', '1804')->first();
+        $village = Village::query()->where('code', $this->villageCode)->where('district_code', $this->districtCode)->first();
 
         if (! $district || ! $village) {
             session()->flash('error', 'Data wilayah tidak valid.');
@@ -153,6 +155,6 @@ class RegisterSeller extends Component
         return view('livewire.auth.register-seller', [
             'districts' => $this->districts,
             'villages' => $this->villages,
-        ])->extends('layouts.auth')->section('content');
+        ]);
     }
 }

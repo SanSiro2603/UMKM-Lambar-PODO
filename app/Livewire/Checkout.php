@@ -13,7 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 
+#[Layout('layouts.app')]
 class Checkout extends Component
 {
     public array $paymentMethods = []; // store_id => method ('xendit' or 'cod')
@@ -60,7 +62,7 @@ class Checkout extends Component
 
         foreach ($grouped as $storeId => $data) {
             // 🔒 SECURITY FIX: Check all active orders, not just 5-minute window (ISSUE-014)
-            $recentOrders = Order::where('customer_id', $user->id)
+            $recentOrders = Order::query()->where('customer_id', $user->id)
                 ->where('store_id', $storeId)
                 ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
                 ->with('items')
@@ -220,7 +222,7 @@ class Checkout extends Component
                         $qty = $item['qty'];
 
                         // 🔒 SECURITY FIX: Pessimistic locking (ISSUE-002)
-                        $freshProduct = Product::where('id', $product->id)
+                        $freshProduct = Product::query()->where('id', $product->id)
                                                ->lockForUpdate()
                                                ->first();
 
@@ -286,7 +288,7 @@ class Checkout extends Component
                 }
 
                 if (!$this->buyNowProductId) {
-                    \App\Models\CartItem::where('user_id', Auth::id())
+                    \App\Models\CartItem::query()->where('user_id', Auth::id())
                         ->whereIn('product_id', $this->purchasedProductIds)
                         ->delete();
                     $this->dispatch('cart-updated')->to(CartManager::class);
@@ -312,6 +314,6 @@ class Checkout extends Component
 
     public function render()
     {
-        return view('livewire.checkout')->extends('layouts.app')->section('content');
+        return view('livewire.checkout');
     }
 }

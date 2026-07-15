@@ -147,7 +147,11 @@
 
         {{-- Content --}}
         <main class="flex-1 p-4 sm:p-6">
-            @yield('content')
+            @isset($slot)
+                {{ $slot }}
+            @else
+                @yield('content')
+            @endisset
         </main>
     </div>
 

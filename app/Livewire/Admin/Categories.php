@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
+#[Layout('layouts.dashboard')]
 class Categories extends Component
 {
     public string $name = '';
@@ -107,6 +109,6 @@ class Categories extends Component
 
         return view('livewire.admin.categories', [
             'categories' => $categories
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 }

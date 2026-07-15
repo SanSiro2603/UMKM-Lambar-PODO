@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -10,6 +11,7 @@ use Illuminate\Validation\Rules\Password;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
 
+#[Layout('layouts.auth')]
 class Register extends Component
 {
     public string $name = '';
@@ -51,7 +53,7 @@ class Register extends Component
     public function mount(): void
     {
         // Load kecamatan Lampung Barat (code 1804)
-        $this->districts = District::where('city_code', '1804')
+        $this->districts = District::query()->where('city_code', '1804')
             ->orderBy('name')
             ->get()
             ->map(fn($d) => ['code' => $d->code, 'name' => $d->name])
@@ -64,7 +66,7 @@ class Register extends Component
         $this->villageCode = '';
         $this->villages = [];
         if ($value) {
-            $this->villages = Village::where('district_code', $value)
+            $this->villages = Village::query()->where('district_code', $value)
                 ->orderBy('name')
                 ->get()
                 ->map(fn($v) => ['code' => $v->code, 'name' => $v->name])
@@ -115,6 +117,6 @@ class Register extends Component
         return view('livewire.auth.register', [
             'districts' => $this->districts,
             'villages' => $this->villages,
-        ])->extends('layouts.auth')->section('content');
+        ]);
     }
 }

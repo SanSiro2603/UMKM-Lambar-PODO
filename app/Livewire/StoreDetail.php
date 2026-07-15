@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Store;
 
+#[Layout('layouts.app')]
 class StoreDetail extends Component
 {
     public string $slug;
@@ -16,7 +18,7 @@ class StoreDetail extends Component
 
     public function render()
     {
-        $store = Store::where('slug', $this->slug)->where('status', 'approved')->firstOrFail();
+        $store = Store::query()->where('slug', $this->slug)->where('status', 'approved')->firstOrFail();
         $products = $store->products()
             ->with('category')
             ->withAvg('ratings', 'rating')
@@ -28,6 +30,6 @@ class StoreDetail extends Component
         return view('livewire.store-detail', [
             'store' => $store,
             'products' => $products
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }

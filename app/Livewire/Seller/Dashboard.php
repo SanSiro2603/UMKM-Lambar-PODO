@@ -3,11 +3,13 @@
 namespace App\Livewire\Seller;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
+#[Layout('layouts.dashboard')]
 class Dashboard extends Component
 {
     public function mount()
@@ -35,42 +37,42 @@ class Dashboard extends Component
         if ($store->status === 'pending') {
             return view('livewire.seller.dashboard-pending', [
                 'store' => $store,
-            ])->extends('layouts.dashboard')->section('content');
+            ]);
         }
 
         // Stats
-        $totalProducts = Product::where('store_id', $store->id)->count();
+        $totalProducts = Product::query()->where('store_id', $store->id)->count();
         
-        $newOrders = Order::where('store_id', $store->id)
+        $newOrders = Order::query()->where('store_id', $store->id)
             ->where('status', 'waiting_payment')
             ->count();
             
-        $revenue = Order::where('store_id', $store->id)
+        $revenue = Order::query()->where('store_id', $store->id)
             ->whereIn('status', ['paid', 'shipped', 'delivered'])
             ->sum('total_price');
 
-        $totalCustomers = Order::where('store_id', $store->id)
+        $totalCustomers = Order::query()->where('store_id', $store->id)
             ->distinct('customer_id')
             ->count('customer_id');
 
         // Recent Orders
-        $recentOrders = Order::where('store_id', $store->id)
+        $recentOrders = Order::query()->where('store_id', $store->id)
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
 
         // Split payment summary (Xendit transactions for this seller)
-        $splitTransactions = \App\Models\Transaction::where('seller_id', $user->id)
+        $splitTransactions = \App\Models\Transaction::query()->where('seller_id', $user->id)
             ->whereIn('status', ['paid', 'disbursed'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
 
-        $totalSalesSplit = \App\Models\Transaction::where('seller_id', $user->id)
+        $totalSalesSplit = \App\Models\Transaction::query()->where('seller_id', $user->id)
             ->where('status', 'disbursed')
             ->sum('seller_amount');
 
-        $pendingDisbursement = \App\Models\Transaction::where('seller_id', $user->id)
+        $pendingDisbursement = \App\Models\Transaction::query()->where('seller_id', $user->id)
             ->where('status', 'paid')
             ->sum('seller_amount');
 
@@ -94,7 +96,7 @@ class Dashboard extends Component
             $days[] = $dayNamesIndonesian[$dayName] ?? $dayName;
             
             // Timezone-safe date matching using whereBetween start & end of day
-            $daySales = Order::where('store_id', $store->id)
+            $daySales = Order::query()->where('store_id', $store->id)
                 ->whereBetween('created_at', [$targetDate->copy()->startOfDay(), $targetDate->copy()->endOfDay()])
                 ->whereNotIn('status', ['cancelled'])
                 ->sum('total_price');
@@ -103,7 +105,7 @@ class Dashboard extends Component
         }
 
         // Order Status Distribution Donut Chart
-        $statusCounts = Order::where('store_id', $store->id)
+        $statusCounts = Order::query()->where('store_id', $store->id)
             ->selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status')
@@ -149,7 +151,7 @@ class Dashboard extends Component
             ->limit(5)
             ->get();
 
-        $paymentCounts = Order::where('store_id', $store->id)
+        $paymentCounts = Order::query()->where('store_id', $store->id)
             ->selectRaw('payment_method, COUNT(*) as count')
             ->groupBy('payment_method')
             ->pluck('count', 'payment_method')
@@ -170,7 +172,7 @@ class Dashboard extends Component
             }
         }
 
-        $lowStockProducts = Product::where('store_id', $store->id)
+        $lowStockProducts = Product::query()->where('store_id', $store->id)
             ->where('stock', '<=', 5)
             ->orderBy('stock')
             ->orderBy('name')
@@ -198,6 +200,6 @@ class Dashboard extends Component
             'paymentMethodLabels' => $paymentMethodLabels,
             'paymentMethodValues' => $paymentMethodValues,
             'lowStockProducts' => $lowStockProducts,
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 }

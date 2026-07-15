@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('layouts.dashboard')]
 class Reports extends Component
 {
     public string $startDate = '';
@@ -80,7 +82,7 @@ class Reports extends Component
             'periodLabel' => $this->periodLabel($start, $end),
             'pdfQuery' => $this->pdfQuery(),
             'store' => $store,
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 
     private function dateRange(): array

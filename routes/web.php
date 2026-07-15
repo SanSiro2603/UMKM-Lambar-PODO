@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\RateLimiter;
@@ -29,15 +30,15 @@ RateLimiter::for('auth', function (Request $request) {
 
 Route::middleware(['throttle:public'])->group(function() {
     Route::get('/', function() {
-        $categories = \App\Models\Category::limit(6)->get();
-        $products = \App\Models\Product::with(['category', 'store'])
+        $categories = \App\Models\Category::query()->limit(6)->get();
+        $products = \App\Models\Product::query()->with(['category', 'store'])
             ->withAvg('ratings', 'rating')
             ->withCount('ratings')
             ->withSoldQuantity()
-            ->whereHas('store', function($q) {
-            $q->where('status', 'approved');
-        })->orderByDesc('sold_quantity')->limit(8)->get();
-        $stores = \App\Models\Store::where('status', 'approved')->limit(4)->get();
+            ->whereHas('store', function (\Illuminate\Database\Eloquent\Builder $q) {
+                $q->where('status', 'approved');
+            })->orderByDesc('sold_quantity')->limit(8)->get();
+        $stores = \App\Models\Store::query()->where('status', 'approved')->limit(4)->get();
         
         return view('home', compact('categories', 'products', 'stores'));
     })->name('home');

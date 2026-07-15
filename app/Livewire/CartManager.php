@@ -20,7 +20,7 @@ class CartManager extends Component
     public function refreshCount()
     {
         if (Auth::check()) {
-            $this->cartCount = CartItem::where('user_id', Auth::id())->sum('qty');
+            $this->cartCount = CartItem::query()->where('user_id', Auth::id())->sum('qty');
         } else {
             $this->cartCount = 0;
         }

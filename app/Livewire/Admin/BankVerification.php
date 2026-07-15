@@ -4,10 +4,12 @@ namespace App\Livewire\Admin;
 
 use App\Models\Store;
 use Illuminate\Contracts\View\View;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Log;
 
+#[Layout('layouts.dashboard')]
 class BankVerification extends Component
 {
     use WithPagination;
@@ -83,8 +85,6 @@ class BankVerification extends Component
             ->latest()
             ->paginate(20);
 
-        return view('livewire.admin.bank-verification', compact('stores'))
-            ->extends('layouts.dashboard')
-            ->section('content');
+        return view('livewire.admin.bank-verification', compact('stores'));
     }
 }

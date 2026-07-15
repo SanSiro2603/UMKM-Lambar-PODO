@@ -5,8 +5,10 @@ namespace App\Livewire;
 use App\Events\CourierLocationUpdated;
 use App\Events\OrderStatusUpdated;
 use App\Models\Order;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('layouts.courier')]
 class CourierTracking extends Component
 {
     public ?Order $order = null;
@@ -90,6 +92,6 @@ class CourierTracking extends Component
 
     public function render()
     {
-        return view('livewire.courier-tracking')->extends('layouts.courier')->section('content');
+        return view('livewire.courier-tracking');
     }
 }

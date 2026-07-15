@@ -69,7 +69,11 @@
                     <span class="font-heading font-bold text-xl text-primary-500">UMKM <span class="text-accent-400">Lampung Barat</span></span>
                 </div>
 
-                @yield('content')
+                @isset($slot)
+                    {{ $slot }}
+                @else
+                    @yield('content')
+                @endisset
 
                 {{-- Back to Home --}}
                 <div class="mt-8 text-center">

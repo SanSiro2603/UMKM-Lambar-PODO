@@ -3,9 +3,11 @@
 namespace App\Livewire\Customer;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 
+#[Layout('layouts.app')]
 class Orders extends Component
 {
     public string $statusTab = 'semua';
@@ -37,6 +39,6 @@ class Orders extends Component
 
         return view('livewire.customer.orders', [
             'orders' => $orders
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Store;
 
+#[Layout('layouts.app')]
 class StoreCatalog extends Component
 {
     public string $search = '';
@@ -31,6 +33,6 @@ class StoreCatalog extends Component
 
         return view('livewire.store-catalog', [
             'stores' => $stores
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }

@@ -6,8 +6,10 @@ use App\Services\XenditService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('layouts.dashboard')]
 class BankAccount extends Component
 {
     protected XenditService $xendit;
@@ -89,8 +91,6 @@ class BankAccount extends Component
         $store = Auth::user()->store;
         $banks = config('banks.list');
 
-        return view('livewire.seller.bank-account', compact('store', 'banks'))
-            ->extends('layouts.dashboard')
-            ->section('content');
+        return view('livewire.seller.bank-account', compact('store', 'banks'));
     }
 }

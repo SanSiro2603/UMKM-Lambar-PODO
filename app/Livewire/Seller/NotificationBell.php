@@ -48,7 +48,7 @@ class NotificationBell extends Component
         $unreadCount   = 0;
 
         if ($store) {
-            $notifications = Order::where('store_id', $store->id)
+            $notifications = Order::query()->where('store_id', $store->id)
                 ->orderByDesc('created_at')
                 ->limit(15)
                 ->get(['id', 'order_code', 'status', 'total_price', 'created_at'])
@@ -59,7 +59,7 @@ class NotificationBell extends Component
                     return $order;
                 });
 
-            $countQuery = Order::where('store_id', $store->id);
+            $countQuery = Order::query()->where('store_id', $store->id);
 
             if ($lastSeen) {
                 // Hitung order yang masuk SETELAH seller terakhir buka bell

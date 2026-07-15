@@ -10,8 +10,10 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('layouts.dashboard')]
 class Reports extends Component
 {
     public string $startDate = '';
@@ -36,8 +38,8 @@ class Reports extends Component
 
         [$start, $end, $isValid] = $this->dateRange();
 
-        $storeQuery = Store::where('status', 'approved');
-        $orderQuery = Order::whereIn('status', ['paid', 'shipped', 'delivered']);
+        $storeQuery = Store::query()->where('status', 'approved');
+        $orderQuery = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($storeQuery, $start, $end);
@@ -47,7 +49,7 @@ class Reports extends Component
             $orderQuery->whereRaw('1 = 0');
         }
 
-        $totalSellers = Store::where('status', 'approved')->count();
+        $totalSellers = Store::query()->where('status', 'approved')->count();
         $newSellersCount = (clone $storeQuery)->count();
         $transactionsCount = (clone $orderQuery)->count();
         $totalRevenue = (clone $orderQuery)->sum('total_price');
@@ -101,7 +103,7 @@ class Reports extends Component
             'sellerChartTitle' => $sellerChart['title'],
             'periodLabel' => $this->periodLabel($start, $end),
             'pdfQuery' => $this->pdfQuery(),
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 
     private function dateRange(): array

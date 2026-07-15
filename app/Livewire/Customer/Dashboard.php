@@ -3,11 +3,13 @@
 namespace App\Livewire\Customer;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
 
+#[Layout('layouts.app')]
 class Dashboard extends Component
 {
     public string $detailAddress = '';
@@ -38,14 +40,14 @@ class Dashboard extends Component
                 $this->kecamatan = $kecamatanName;
 
                 // Find district code from DB name
-                $district = District::where('city_code', '1804')
+                $district = District::query()->where('city_code', '1804')
                     ->where('name', 'like', '%' . strtoupper($kecamatanName) . '%')
                     ->first();
                 if ($district) {
                     $this->selectedDistrictCode = $district->code;
 
                     // Find village
-                    $village = Village::where('district_code', $district->code)
+                    $village = Village::query()->where('district_code', $district->code)
                         ->where('name', 'like', '%' . strtoupper($kelurahanName) . '%')
                         ->first();
                     if ($village) {
@@ -92,7 +94,7 @@ class Dashboard extends Component
     /** Dapatkan daftar kecamatan Lampung Barat */
     public function getDistrictsProperty(): array
     {
-        return District::where('city_code', '1804')
+        return District::query()->where('city_code', '1804')
             ->orderBy('name')
             ->get()
             ->toArray();
@@ -102,7 +104,7 @@ class Dashboard extends Component
     public function getVillagesProperty(): array
     {
         if (!$this->selectedDistrictCode) return [];
-        return Village::where('district_code', $this->selectedDistrictCode)
+        return Village::query()->where('district_code', $this->selectedDistrictCode)
             ->orderBy('name')
             ->get()
             ->toArray();
@@ -121,8 +123,8 @@ class Dashboard extends Component
             'selectedVillageCode.required' => 'Silakan pilih desa/kelurahan.',
         ]);
 
-        $district = District::where('code', $this->selectedDistrictCode)->first();
-        $village = Village::where('code', $this->selectedVillageCode)->first();
+        $district = District::query()->where('code', $this->selectedDistrictCode)->first();
+        $village = Village::query()->where('code', $this->selectedVillageCode)->first();
 
         if (!$district || !$village) {
             session()->flash('error', 'Data wilayah tidak valid.');
@@ -154,19 +156,19 @@ class Dashboard extends Component
             abort(403);
         }
 
-        $pesananAktif = Order::where('customer_id', $user->id)
+        $pesananAktif = Order::query()->where('customer_id', $user->id)
             ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
             ->count();
 
-        $pesananSelesai = Order::where('customer_id', $user->id)
+        $pesananSelesai = Order::query()->where('customer_id', $user->id)
             ->where('status', 'delivered')
             ->count();
 
-        $totalBelanja = Order::where('customer_id', $user->id)
+        $totalBelanja = Order::query()->where('customer_id', $user->id)
             ->whereIn('status', ['paid', 'shipped', 'delivered'])
             ->sum('total_price');
 
-        $menungguPembayaran = Order::where('customer_id', $user->id)
+        $menungguPembayaran = Order::query()->where('customer_id', $user->id)
             ->where('status', 'waiting_payment')
             ->where('payment_method', 'xendit')
             ->count();
@@ -184,6 +186,6 @@ class Dashboard extends Component
             'totalBelanja' => $totalBelanja,
             'menungguPembayaran' => $menungguPembayaran,
             'recentOrders' => $recentOrders,
-        ])->extends('layouts.app')->section('content');
+        ]);
     }
 }

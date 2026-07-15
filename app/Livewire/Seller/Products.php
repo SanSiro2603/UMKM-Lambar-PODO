@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 use Livewire\WithFileUploads;
 use App\Models\Product;
 use App\Models\Category;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
+#[Layout('layouts.dashboard')]
 class Products extends Component
 {
     use WithFileUploads;
@@ -75,7 +77,7 @@ class Products extends Component
     public function showEditForm(int $id)
     {
         $this->resetForm();
-        $product = Product::where('store_id', Auth::user()->store->id)->findOrFail($id);
+        $product = Product::query()->where('store_id', Auth::user()->store->id)->findOrFail($id);
         
         $this->productId = $product->id;
         $this->name = $product->name;
@@ -158,7 +160,7 @@ class Products extends Component
         ];
 
         if ($this->productId) {
-            $product = Product::where('store_id', $store->id)->findOrFail($this->productId);
+            $product = Product::query()->where('store_id', $store->id)->findOrFail($this->productId);
             // keep old slug if name hasn't changed or just overwrite slug
             if ($product->name !== $this->name) {
                 $product->update($data);
@@ -179,7 +181,7 @@ class Products extends Component
     public function deleteProduct(int $id)
     {
         $store = Auth::user()->store;
-        $product = Product::where('store_id', $store->id)->findOrFail($id);
+        $product = Product::query()->where('store_id', $store->id)->findOrFail($id);
         
         if ($product->image) {
             Storage::disk('public')->delete($product->image);
@@ -211,6 +213,6 @@ class Products extends Component
             'products' => $products,
             'categories' => $categories,
             'store' => $store,
-        ])->extends('layouts.dashboard')->section('content');
+        ]);
     }
 }
