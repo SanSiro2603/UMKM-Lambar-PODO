@@ -62,7 +62,7 @@
                     @php
                         $dot = match($order->status) {
                             'waiting_payment' => 'bg-yellow-400',
-                            'paid'            => 'bg-blue-400',
+                            'processing'      => 'bg-blue-400',
                             'shipped'         => 'bg-purple-400',
                             'delivered'       => 'bg-green-500',
                             'cancelled'       => 'bg-red-400',

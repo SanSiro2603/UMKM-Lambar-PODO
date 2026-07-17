@@ -209,7 +209,7 @@ class OrderDetails extends Component
 
                 $this->order->update([
                     'payment_status' => 'paid',
-                    'status'         => 'paid',
+                    'status'         => 'processing',
                     'paid_at'        => now(),
                 ]);
             });

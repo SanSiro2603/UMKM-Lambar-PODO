@@ -24,7 +24,7 @@ class AdminReportController extends Controller
         [$start, $end, $isValid] = $this->dateRange($request);
 
         $storeQuery = Store::where('status', 'approved');
-        $orderQuery = Order::whereIn('status', ['paid', 'shipped', 'delivered']);
+        $orderQuery = Order::whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($storeQuery, $start, $end);
@@ -40,7 +40,7 @@ class AdminReportController extends Controller
         $totalRevenue = (clone $orderQuery)->sum('total_price');
 
         $topSellersQuery = Order::select('store_id', DB::raw('SUM(total_price) as revenue'), DB::raw('COUNT(id) as transactions'))
-            ->whereIn('status', ['paid', 'shipped', 'delivered']);
+            ->whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($topSellersQuery, $start, $end);

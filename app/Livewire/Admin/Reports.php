@@ -39,7 +39,7 @@ class Reports extends Component
         [$start, $end, $isValid] = $this->dateRange();
 
         $storeQuery = Store::query()->where('status', 'approved');
-        $orderQuery = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered']);
+        $orderQuery = Order::query()->whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($storeQuery, $start, $end);
@@ -55,7 +55,7 @@ class Reports extends Component
         $totalRevenue = (clone $orderQuery)->sum('total_price');
 
         $topSellersQuery = Order::select('store_id', DB::raw('SUM(total_price) as revenue'), DB::raw('COUNT(id) as transactions'))
-            ->whereIn('status', ['paid', 'shipped', 'delivered']);
+            ->whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($topSellersQuery, $start, $end);

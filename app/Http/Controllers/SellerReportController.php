@@ -27,7 +27,7 @@ class SellerReportController extends Controller
 
         $query = Order::with(['customer', 'items.product'])
             ->where('store_id', $store->id)
-            ->whereIn('status', ['paid', 'shipped', 'delivered']);
+            ->whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($query, $start, $end);

@@ -56,8 +56,8 @@ class Orders extends Component
                       ->where('id', $this->orderId)
                       ->firstOrFail();
 
-        if ($order->status !== 'paid') {
-            session()->flash('error', 'Pesanan belum siap dikirim (menunggu pembayaran/ongkir).');
+        if ($order->status !== 'processing') {
+            session()->flash('error', 'Pesanan belum siap diproses untuk pengiriman.');
             return;
         }
 

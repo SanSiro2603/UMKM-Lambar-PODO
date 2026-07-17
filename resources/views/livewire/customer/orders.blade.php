@@ -3,7 +3,7 @@
 
     {{-- Status Tabs --}}
     <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-        @foreach(['semua' => 'Semua', 'menunggu' => 'Menunggu', 'paid' => 'Dibayar', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
+        @foreach(['semua' => 'Semua', 'menunggu' => 'Menunggu', 'processing' => 'Diproses', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
             <button wire:click="selectTab('{{ $key }}')"
                     class="px-4 py-2 rounded-xl text-sm font-medium border whitespace-nowrap transition-all
                            {{ $statusTab === $key ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-surface-600 hover:bg-surface-50 border-surface-200' }}">

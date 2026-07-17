@@ -76,7 +76,7 @@ class WebhookController extends Controller
 
                 $transaction->order->update([
                     'payment_status' => 'paid',
-                    'status'         => 'paid',
+                    'status'         => 'processing',
                     'paid_at'        => now(),
                 ]);
 

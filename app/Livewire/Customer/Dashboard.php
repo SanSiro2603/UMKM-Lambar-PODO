@@ -157,7 +157,7 @@ class Dashboard extends Component
         }
 
         $pesananAktif = Order::query()->where('customer_id', $user->id)
-            ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
+            ->whereIn('status', ['waiting_payment', 'processing', 'shipped'])
             ->count();
 
         $pesananSelesai = Order::query()->where('customer_id', $user->id)
@@ -165,7 +165,7 @@ class Dashboard extends Component
             ->count();
 
         $totalBelanja = Order::query()->where('customer_id', $user->id)
-            ->whereIn('status', ['paid', 'shipped', 'delivered'])
+            ->whereIn('status', ['processing', 'shipped', 'delivered'])
             ->sum('total_price');
 
         $menungguPembayaran = Order::query()->where('customer_id', $user->id)

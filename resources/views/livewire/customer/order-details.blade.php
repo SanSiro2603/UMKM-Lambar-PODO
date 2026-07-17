@@ -41,7 +41,12 @@
                 @php
                     $statusFlow = [
                         'waiting_payment'       => ['label' => 'Menunggu Pembayaran', 'desc' => 'Pesanan dibuat, silakan lakukan pembayaran'],
-                        'paid'                  => ['label' => 'Dibayar / Diproses', 'desc' => 'Pembayaran berhasil, pesanan sedang diproses penjual'],
+                        'processing'            => [
+                            'label' => 'Siap Diproses',
+                            'desc' => $order->payment_method === 'cod'
+                                ? 'Pesanan siap diproses penjual; pembayaran dilakukan saat barang diterima'
+                                : 'Pembayaran berhasil, pesanan siap diproses penjual',
+                        ],
                         'shipped'               => ['label' => 'Dibawa Kurir', 'desc' => 'Pesanan dalam perjalanan ke alamat Anda'],
                         'delivered'             => ['label' => 'Selesai', 'desc' => 'Pesanan telah diterima. Terima kasih!'],
                     ];
@@ -137,13 +142,21 @@
                 </button>
                 @endif
             </div>
-            @elseif($order->status === 'paid')
+            @elseif($order->status === 'processing')
             <div class="bg-white rounded-2xl shadow-card p-5">
-                <div class="border-2 border-dashed border-green-200 rounded-xl p-6 text-center bg-green-50/20">
-                    <div class="w-12 h-12 mx-auto rounded-full bg-green-50 flex items-center justify-center mb-3"><svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
-                    <p class="text-sm text-green-700 font-medium">Pembayaran berhasil dikonfirmasi!</p>
-                    <p class="text-xs text-surface-400 mt-1">Menunggu penjual memproses pesanan Anda.</p>
-                </div>
+                @if($order->payment_method === 'cod')
+                    <div class="border-2 border-dashed border-amber-200 rounded-xl p-6 text-center bg-amber-50/20">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-amber-50 flex items-center justify-center mb-3"><svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-2.21 0-4 1.12-4 2.5S9.79 13 12 13s4 1.12 4 2.5S14.21 18 12 18m0-10V6m0 12v2m9-8a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                        <p class="text-sm text-amber-700 font-medium">Pesanan COD siap diproses.</p>
+                        <p class="text-xs text-surface-500 mt-1">Bayar saat barang diterima. Penjual akan menyiapkan pesanan Anda.</p>
+                    </div>
+                @else
+                    <div class="border-2 border-dashed border-green-200 rounded-xl p-6 text-center bg-green-50/20">
+                        <div class="w-12 h-12 mx-auto rounded-full bg-green-50 flex items-center justify-center mb-3"><svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                        <p class="text-sm text-green-700 font-medium">Pembayaran berhasil dikonfirmasi!</p>
+                        <p class="text-xs text-surface-400 mt-1">Menunggu penjual memproses pesanan Anda.</p>
+                    </div>
+                @endif
             </div>
             @elseif($order->status === 'cancelled')
             <div class="bg-white rounded-2xl shadow-card p-5">
@@ -350,7 +363,17 @@
                 <h3 class="font-heading font-bold text-surface-900 mb-4">Info Pembayaran</h3>
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between"><span class="text-surface-500">Metode</span><span class="font-medium text-surface-800">{{ $order->payment_method === 'cod' ? 'COD (Bayar di Tempat)' : 'Bayar Online' }}</span></div>
-                    <div class="flex justify-between"><span class="text-surface-500">Status</span><x-status-badge status="{{ $order->payment_status }}" /></div>
+                    <div class="flex justify-between gap-3">
+                        <span class="text-surface-500">Status</span>
+                        @if($order->payment_method === 'cod' && $order->payment_status === 'unpaid')
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 text-right">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                Bayar saat barang diterima
+                            </span>
+                        @else
+                            <x-status-badge status="{{ $order->payment_status }}" />
+                        @endif
+                    </div>
                     @if($order->transaction && $order->transaction->isPaid())
                         @php
                             $ch = $order->transaction->xendit_payment_channel ?? '';

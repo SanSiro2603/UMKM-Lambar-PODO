@@ -18,7 +18,7 @@
         {{-- LIST VIEW --}}
         @if($view === 'list')
             <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                @foreach(['semua' => 'Semua', 'waiting_payment' => 'Menunggu Bayar', 'paid' => 'Dibayar', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
+                @foreach(['semua' => 'Semua', 'waiting_payment' => 'Menunggu Bayar', 'processing' => 'Siap Diproses', 'shipped' => 'Dikirim', 'delivered' => 'Selesai', 'cancelled' => 'Dibatalkan'] as $key => $label)
                     <button wire:click="selectTab('{{ $key }}')" class="px-4 py-2 rounded-xl text-sm font-medium border whitespace-nowrap transition-all {{ $statusTab === $key ? 'bg-primary-500 text-white border-primary-500' : 'bg-white text-surface-600 hover:bg-surface-50 border-surface-200' }}">{{ $label }}</button>
                 @endforeach
             </div>
@@ -241,7 +241,7 @@
                         <h3 class="font-heading font-bold text-surface-900 mb-3">Pembayaran</h3>
                         <div class="space-y-2 text-sm">
                             <p class="flex justify-between"><span class="text-surface-500">Metode:</span><span class="text-surface-800">{{ $order->payment_method === 'cod' ? 'COD (Bayar di Tempat)' : 'Bayar Online' }}</span></p>
-                            <p class="flex justify-between"><span class="text-surface-500">Status:</span><span class="{{ $order->payment_status === 'paid' ? 'text-green-600' : 'text-amber-600' }} font-medium">{{ $order->payment_status === 'paid' ? 'LUNAS' : 'BELUM BAYAR' }}</span></p>
+                            <p class="flex justify-between gap-3"><span class="text-surface-500">Status:</span><span class="{{ $order->payment_status === 'paid' ? 'text-green-600' : 'text-amber-600' }} font-medium text-right">{{ $order->payment_status === 'paid' ? 'LUNAS' : ($order->payment_method === 'cod' ? 'BAYAR SAAT BARANG DITERIMA' : 'BELUM BAYAR') }}</span></p>
                             @if($order->isPaid() && $order->transaction)
                                 @php
                                     $ch = $order->transaction->xendit_payment_channel ?? '';
@@ -277,8 +277,12 @@
 
                             @if($order->status === 'waiting_payment')
                                 <p class="text-sm text-surface-500">Menunggu customer melakukan pembayaran. Pembayaran akan terkonfirmasi otomatis setelah customer selesai bayar.</p>
-                            @elseif($order->status === 'paid')
-                                <p class="text-xs text-surface-500 mb-4">Pembayaran sudah dikonfirmasi. Tugaskan kurir untuk mengantar pesanan ini — link pelacakan akan dikirim otomatis via WhatsApp.</p>
+                            @elseif($order->status === 'processing')
+                                @if($order->payment_method === 'cod')
+                                    <p class="text-xs text-surface-500 mb-4">Pesanan COD siap diproses. Tugaskan kurir untuk mengantar pesanan dan menagih pembayaran saat barang diterima; link pelacakan akan dikirim otomatis via WhatsApp.</p>
+                                @else
+                                    <p class="text-xs text-surface-500 mb-4">Pembayaran sudah dikonfirmasi. Tugaskan kurir untuk mengantar pesanan ini; link pelacakan akan dikirim otomatis via WhatsApp.</p>
+                                @endif
                                 <form wire:submit.prevent="sendCourierAccess" class="space-y-3">
                                     <div>
                                         <input type="text" wire:model="courierName" placeholder="Nama Kurir" class="w-full px-3 py-2 border border-surface-300 rounded-xl text-sm focus:border-primary-400 focus:ring-1 focus:ring-primary-100">

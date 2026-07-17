@@ -44,7 +44,7 @@ class Dashboard extends Component
 
         // Revenue: dari Transaction (platform fee) + Order yg COD/selesai
         $platformRevenue = \App\Models\Transaction::query()->where('status', 'disbursed')->sum('platform_fee');
-        $totalOmzet = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered'])->sum('total_price');
+        $totalOmzet = Order::query()->whereIn('status', ['processing', 'shipped', 'delivered'])->sum('total_price');
         $revenue = $platformRevenue; // platform actual income
 
         // Split payment summary
@@ -58,7 +58,7 @@ class Dashboard extends Component
             ->get();
 
         // 1. Leaderboard Toko Terlaris (Top Stores by Revenue)
-        $topStores = Order::query()->whereIn('status', ['paid', 'shipped', 'delivered'])
+        $topStores = Order::query()->whereIn('status', ['processing', 'shipped', 'delivered'])
             ->selectRaw('store_id, SUM(total_price) as total_revenue, COUNT(*) as total_sales')
             ->groupBy('store_id')
             ->orderByDesc('total_revenue')
@@ -71,7 +71,7 @@ class Dashboard extends Component
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->join('categories', 'products.category_id', '=', 'categories.id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereIn('orders.status', ['paid', 'shipped', 'delivered'])
+            ->whereIn('orders.status', ['processing', 'shipped', 'delivered'])
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('total_qty')
             ->limit(5)

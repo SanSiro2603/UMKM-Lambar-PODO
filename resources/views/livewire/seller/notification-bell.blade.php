@@ -43,7 +43,7 @@
                 @php
                     [$dotBg, $statusText, $statusColor] = match($order->status) {
                         'waiting_payment' => ['bg-yellow-400', 'Menunggu Bayar',  'text-yellow-600'],
-                        'paid'            => ['bg-blue-400',   'Siap Dikirim',    'text-blue-600'],
+                        'processing'      => ['bg-blue-400',   'Siap Diproses',   'text-blue-600'],
                         'shipped'         => ['bg-purple-400', 'Dikirim',         'text-purple-600'],
                         'delivered'       => ['bg-green-500',  'Selesai',         'text-green-600'],
                         'cancelled'       => ['bg-red-400',    'Dibatalkan',      'text-red-500'],

@@ -39,7 +39,7 @@ class Reports extends Component
 
         $query = Order::with(['customer', 'items.product'])
             ->where('store_id', $store->id)
-            ->whereIn('status', ['paid', 'shipped', 'delivered']);
+            ->whereIn('status', ['processing', 'shipped', 'delivered']);
 
         if ($isValid) {
             $this->applyDateRange($query, $start, $end);
@@ -54,7 +54,7 @@ class Reports extends Component
 
         $bestSellerItem = OrderItem::selectRaw('product_id, SUM(qty) as total_qty')
             ->whereHas('order', function (Builder $query) use ($store, $start, $end, $isValid) {
-                $query->where('store_id', $store->id)->whereIn('status', ['paid', 'shipped', 'delivered']);
+                $query->where('store_id', $store->id)->whereIn('status', ['processing', 'shipped', 'delivered']);
 
                 if ($isValid) {
                     $this->applyDateRange($query, $start, $end);

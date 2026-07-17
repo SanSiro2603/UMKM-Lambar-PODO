@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Events\OrderPaymentUploaded;
 use App\Livewire\Checkout;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
@@ -56,6 +57,34 @@ class CheckoutShippingTest extends TestCase
 
         $this->assertSame(3, $product->fresh()->stock);
         Event::assertDispatched(OrderPaymentUploaded::class);
+    }
+
+    public function test_cod_checkout_creates_unpaid_processing_order(): void
+    {
+        Event::fake([OrderPaymentUploaded::class]);
+
+        $product = $this->createApprovedProduct();
+        $customer = $this->createCustomer();
+
+        Livewire::withQueryParams([
+            'product_id' => $product->id,
+            'qty' => 1,
+        ])
+            ->actingAs($customer)
+            ->test(Checkout::class)
+            ->set('paymentMethods', [$product->store_id => 'cod'])
+            ->call('placeOrder')
+            ->assertRedirect(route('customer.orders'));
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $customer->id,
+            'store_id' => $product->store_id,
+            'payment_method' => 'cod',
+            'payment_status' => 'unpaid',
+            'status' => 'processing',
+        ]);
+
+        $this->assertNull(Order::query()->where('customer_id', $customer->id)->value('paid_at'));
     }
 
     private function createCustomer(): User

@@ -64,7 +64,7 @@ class Checkout extends Component
             // 🔒 SECURITY FIX: Check all active orders, not just 5-minute window (ISSUE-014)
             $recentOrders = Order::query()->where('customer_id', $user->id)
                 ->where('store_id', $storeId)
-                ->whereIn('status', ['waiting_payment', 'paid', 'shipped'])
+                ->whereIn('status', ['waiting_payment', 'processing', 'shipped'])
                 ->with('items')
                 ->get();
 
@@ -257,7 +257,7 @@ class Checkout extends Component
                         'payment_status' => 'unpaid',
                         // Pesanan COD langsung siap diproses; Xendit langsung menunggu pembayaran
                         // (ongkir sudah otomatis terhitung, tidak ada lagi status waiting_shipping_cost).
-                        'status' => $paymentMethod === 'cod' ? 'paid' : 'waiting_payment',
+                        'status' => $paymentMethod === 'cod' ? 'processing' : 'waiting_payment',
                     ]);
 
                     foreach ($data['items'] as $item) {

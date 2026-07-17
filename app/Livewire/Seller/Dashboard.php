@@ -48,7 +48,7 @@ class Dashboard extends Component
             ->count();
             
         $revenue = Order::query()->where('store_id', $store->id)
-            ->whereIn('status', ['paid', 'shipped', 'delivered'])
+            ->whereIn('status', ['processing', 'shipped', 'delivered'])
             ->sum('total_price');
 
         $totalCustomers = Order::query()->where('store_id', $store->id)
@@ -113,7 +113,7 @@ class Dashboard extends Component
 
         $statusLabels = [
             'waiting_payment' => 'Menunggu Pembayaran',
-            'paid' => 'Sudah Dibayar',
+            'processing' => 'Siap Diproses',
             'shipped' => 'Dikirim',
             'delivered' => 'Selesai',
             'cancelled' => 'Dibatalkan'
@@ -144,7 +144,7 @@ class Dashboard extends Component
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('products', 'order_items.product_id', '=', 'products.id')
             ->where('orders.store_id', $store->id)
-            ->whereIn('orders.status', ['paid', 'shipped', 'delivered'])
+            ->whereIn('orders.status', ['processing', 'shipped', 'delivered'])
             ->selectRaw('products.name, SUM(order_items.qty * order_items.price) as revenue')
             ->groupBy('products.id', 'products.name')
             ->orderByDesc('revenue')
