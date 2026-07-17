@@ -60,7 +60,7 @@ class Order extends Model
 
     public function transaction(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(Transaction::class);
+        return $this->hasOne(Transaction::class)->latestOfMany();
     }
 
     /** Apakah order sudah bisa dibayar via Xendit */

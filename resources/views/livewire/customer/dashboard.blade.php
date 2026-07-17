@@ -128,6 +128,12 @@
                         </div>
                     @endif
 
+                    @if (session()->has('shipping-sync-warning'))
+                        <div class="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-700 rounded-xl text-xs font-medium leading-relaxed">
+                            {{ session('shipping-sync-warning') }}
+                        </div>
+                    @endif
+
                     @if(!$user->address)
                         <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
                             <svg class="w-4 h-4 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,6 +182,39 @@
                             <div class="p-3 bg-surface-50 rounded-xl text-xs text-surface-500">
                                 Kabupaten: <strong class="text-surface-700">Lampung Barat</strong>
                             </div>
+
+                            @php($shippingPreview = $this->shippingPreview)
+                            @if(count($shippingPreview['orders']) > 0)
+                                <div class="p-3 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
+                                    <p class="text-xs font-bold text-blue-800">Dampak ke pesanan aktif</p>
+                                    @foreach($shippingPreview['orders'] as $preview)
+                                        <div class="p-2.5 bg-white/80 border border-blue-100 rounded-lg text-xs">
+                                            <div class="flex justify-between gap-3">
+                                                <span class="font-semibold text-surface-700">#{{ $preview['order_code'] }}</span>
+                                                <span class="text-surface-500 truncate">{{ $preview['store_name'] }}</span>
+                                            </div>
+                                            <div class="flex justify-between gap-3 mt-1 text-surface-600">
+                                                <span>Ongkir</span>
+                                                <span>Rp {{ number_format($preview['old_cost'], 0, ',', '.') }} → <strong class="text-blue-700">Rp {{ number_format($preview['new_cost'], 0, ',', '.') }}</strong></span>
+                                            </div>
+                                            <div class="flex justify-between gap-3 mt-1 text-surface-600">
+                                                <span>Total baru</span>
+                                                <strong class="text-blue-700">Rp {{ number_format($preview['new_total'], 0, ',', '.') }}</strong>
+                                            </div>
+                                            <p class="mt-1 text-[11px] text-surface-500">{{ $preview['zone_label'] }}</p>
+                                            @if($preview['invoice_will_reset'])
+                                                <p class="mt-1 text-[11px] font-semibold text-amber-700">Invoice pembayaran lama akan dibatalkan karena total berubah.</p>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if($shippingPreview['skipped'] > 0)
+                                <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[11px] text-amber-700 leading-relaxed">
+                                    {{ $shippingPreview['skipped'] }} pesanan yang sudah lunas atau dikirim tidak akan diubah dan tetap memakai alamat sebelumnya.
+                                </div>
+                            @endif
 
                             <div class="flex gap-2 pt-1">
                                 <button type="submit"

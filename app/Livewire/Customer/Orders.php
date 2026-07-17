@@ -4,6 +4,7 @@ namespace App\Livewire\Customer;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,6 +16,11 @@ class Orders extends Component
     public function selectTab(string $tab)
     {
         $this->statusTab = $tab;
+    }
+
+    #[On('order-shipping-updated')]
+    public function refreshOrders(?int $orderId = null): void
+    {
     }
 
     public function render()

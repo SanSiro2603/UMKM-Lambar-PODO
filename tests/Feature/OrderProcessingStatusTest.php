@@ -93,6 +93,8 @@ class OrderProcessingStatusTest extends TestCase
         ['seller' => $seller, 'order' => $order] = $this->createOrder([
             'payment_method' => 'xendit',
             'status' => 'waiting_payment',
+            'xendit_invoice_id' => 'invoice-processing-test',
+            'xendit_invoice_url' => 'https://example.test/invoice-processing-test',
         ]);
 
         $transaction = Transaction::create([
@@ -124,6 +126,46 @@ class OrderProcessingStatusTest extends TestCase
         $this->assertSame('paid', $order->payment_status);
         $this->assertNotNull($order->paid_at);
         $this->assertSame('paid', $transaction->status);
+    }
+
+    public function test_stale_xendit_webhooks_do_not_change_order_after_invoice_replacement(): void
+    {
+        ['seller' => $seller, 'order' => $order] = $this->createOrder([
+            'payment_method' => 'xendit',
+            'status' => 'waiting_payment',
+            'xendit_invoice_id' => null,
+            'xendit_invoice_url' => null,
+        ]);
+
+        Transaction::create([
+            'order_id' => $order->id,
+            'seller_id' => $seller->id,
+            'total_amount' => $order->total_price + 15000,
+            'xendit_invoice_id' => 'stale-address-invoice',
+            'status' => 'expired',
+            'expired_at' => now(),
+            'metadata' => ['expired_reason' => 'shipping_address_changed'],
+        ]);
+
+        $xendit = Mockery::mock(XenditService::class);
+        $xendit->shouldReceive('verifyWebhookToken')->twice()->with('valid-token')->andReturnTrue();
+        $xendit->shouldNotReceive('disbursementToSeller');
+        $this->app->instance(XenditService::class, $xendit);
+
+        foreach (['PAID', 'EXPIRED'] as $status) {
+            $this->withHeader('x-callback-token', 'valid-token')
+                ->postJson(route('api.webhook.xendit'), [
+                    'id' => 'stale-address-invoice',
+                    'status' => $status,
+                ])
+                ->assertOk()
+                ->assertJson(['message' => 'Stale invoice ignored']);
+        }
+
+        $order->refresh();
+        $this->assertSame('waiting_payment', $order->status);
+        $this->assertSame('unpaid', $order->payment_status);
+        $this->assertNull($order->paid_at);
     }
 
     private function createOrder(array $overrides = []): array

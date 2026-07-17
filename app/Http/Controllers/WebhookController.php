@@ -64,6 +64,15 @@ class WebhookController extends Controller
      */
     protected function handlePaid(Transaction $transaction, array $data): \Illuminate\Http\JsonResponse
     {
+        if (! $this->isCurrentPendingInvoice($transaction)) {
+            Log::info('Webhook PAID ignored for stale invoice', [
+                'transaction_id' => $transaction->id,
+                'invoice_id' => $transaction->xendit_invoice_id,
+            ]);
+
+            return response()->json(['message' => 'Stale invoice ignored'], 200);
+        }
+
         try {
             DB::transaction(function () use ($transaction, $data) {
                 $transaction->update([
@@ -112,6 +121,15 @@ class WebhookController extends Controller
      */
     protected function handleExpired(Transaction $transaction): \Illuminate\Http\JsonResponse
     {
+        if (! $this->isCurrentPendingInvoice($transaction)) {
+            Log::info('Webhook EXPIRED ignored for stale invoice', [
+                'transaction_id' => $transaction->id,
+                'invoice_id' => $transaction->xendit_invoice_id,
+            ]);
+
+            return response()->json(['message' => 'Stale invoice ignored'], 200);
+        }
+
         DB::transaction(function () use ($transaction) {
             $transaction->update([
                 'status'     => 'expired',
@@ -130,5 +148,16 @@ class WebhookController extends Controller
         });
 
         return response()->json(['message' => 'Payment expired processed'], 200);
+    }
+
+    private function isCurrentPendingInvoice(Transaction $transaction): bool
+    {
+        $order = $transaction->order;
+
+        return $transaction->status === 'pending'
+            && $order !== null
+            && $order->payment_status === 'unpaid'
+            && $order->status === 'waiting_payment'
+            && $order->xendit_invoice_id === $transaction->xendit_invoice_id;
     }
 }

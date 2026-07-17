@@ -4,6 +4,7 @@ namespace App\Livewire\Seller;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -12,6 +13,11 @@ use Illuminate\Support\Facades\Auth;
 #[Layout('layouts.dashboard')]
 class Dashboard extends Component
 {
+    #[On('refresh-orders')]
+    public function refreshOrders(): void
+    {
+    }
+
     public function mount()
     {
         $user = Auth::user();

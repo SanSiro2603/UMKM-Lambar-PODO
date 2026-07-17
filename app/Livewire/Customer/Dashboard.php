@@ -4,7 +4,9 @@ namespace App\Livewire\Customer;
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use App\Models\Order;
+use App\Services\ActiveOrderShippingSyncService;
 use Illuminate\Support\Facades\Auth;
 use Laravolt\Indonesia\Models\District;
 use Laravolt\Indonesia\Models\Village;
@@ -91,6 +93,17 @@ class Dashboard extends Component
         $this->kelurahan = '';
     }
 
+    /** Preview dampak ongkir saat kecamatan baru dipilih. */
+    public function getShippingPreviewProperty(): array
+    {
+        if (! $this->isEditingAddress || ! $this->selectedDistrictCode || ! Auth::user()) {
+            return ['orders' => [], 'skipped' => 0];
+        }
+
+        return app(ActiveOrderShippingSyncService::class)
+            ->preview(Auth::user(), $this->selectedDistrictCode);
+    }
+
     /** Dapatkan daftar kecamatan Lampung Barat */
     public function getDistrictsProperty(): array
     {
@@ -110,7 +123,7 @@ class Dashboard extends Component
             ->toArray();
     }
 
-    public function updateAddress()
+    public function updateAddress(ActiveOrderShippingSyncService $shippingSync)
     {
         $this->validate([
             'selectedDistrictCode' => 'required|string|starts_with:1804',
@@ -123,8 +136,14 @@ class Dashboard extends Component
             'selectedVillageCode.required' => 'Silakan pilih desa/kelurahan.',
         ]);
 
-        $district = District::query()->where('code', $this->selectedDistrictCode)->first();
-        $village = Village::query()->where('code', $this->selectedVillageCode)->first();
+        $district = District::query()
+            ->where('code', $this->selectedDistrictCode)
+            ->where('city_code', '1804')
+            ->first();
+        $village = Village::query()
+            ->where('code', $this->selectedVillageCode)
+            ->where('district_code', $this->selectedDistrictCode)
+            ->first();
 
         if (!$district || !$village) {
             session()->flash('error', 'Data wilayah tidak valid.');
@@ -142,11 +161,41 @@ class Dashboard extends Component
             'district_code' => $this->selectedDistrictCode,
         ]);
 
+        $syncResult = $shippingSync->sync(
+            $user->fresh(),
+            $fullAddress,
+            $this->selectedDistrictCode,
+        );
+
         $this->kecamatan = $district->name;
         $this->kelurahan = $village->name;
 
-        session()->flash('success', 'Alamat pengiriman berhasil diperbarui.');
+        $successMessage = 'Alamat pengiriman berhasil diperbarui.';
+        if ($syncResult['updated'] > 0) {
+            $successMessage .= " {$syncResult['updated']} pesanan aktif telah disesuaikan.";
+        }
+        if ($syncResult['invoice_resets'] > 0) {
+            $successMessage .= " {$syncResult['invoice_resets']} invoice lama dibatalkan; buka detail pesanan untuk membuat invoice baru.";
+        }
+        session()->flash('success', $successMessage);
+
+        $warnings = [];
+        if ($syncResult['skipped'] > 0) {
+            $warnings[] = "{$syncResult['skipped']} pesanan yang sudah lunas atau dikirim tetap menggunakan alamat lama.";
+        }
+        if ($syncResult['failed'] > 0) {
+            $warnings[] = implode(' ', $syncResult['failures']);
+        }
+        if ($warnings !== []) {
+            session()->flash('shipping-sync-warning', implode(' ', $warnings));
+        }
+
         $this->isEditingAddress = false;
+    }
+
+    #[On('order-shipping-updated')]
+    public function refreshOrders(?int $orderId = null): void
+    {
     }
 
     public function render()

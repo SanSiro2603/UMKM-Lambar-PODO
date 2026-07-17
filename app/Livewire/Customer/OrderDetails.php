@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 
 #[Layout('layouts.app')]
 class OrderDetails extends Component
@@ -52,6 +53,16 @@ class OrderDetails extends Component
         if (request()->query('check') === 'paid') {
             $this->checkPaymentStatus(app(XenditService::class));
         }
+    }
+
+    #[On('order-shipping-updated')]
+    public function refreshShipping(int $orderId): void
+    {
+        if ($this->order->id !== $orderId) {
+            return;
+        }
+
+        $this->order->refresh()->load(['store', 'items.product', 'transaction']);
     }
 
     /** Cek apakah user sudah memberi rating untuk product tertentu di order ini */

@@ -136,6 +136,23 @@ class XenditService
         }
     }
 
+    /** Kedaluwarsakan invoice yang nominalnya sudah tidak sesuai. */
+    public function expireInvoice(string $invoiceId): array
+    {
+        try {
+            $invoice = $this->invoiceApi->expireInvoice($invoiceId);
+
+            return ['success' => true, 'data' => $invoice];
+        } catch (\Throwable $e) {
+            Log::error('Xendit expire invoice error', [
+                'invoice_id' => $invoiceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['success' => false, 'message' => 'Gagal memperbarui invoice pembayaran.'];
+        }
+    }
+
     // ============================================================
     // PAYOUT / DISBURSEMENT KE SELLER
     // ============================================================

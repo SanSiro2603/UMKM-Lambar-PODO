@@ -406,6 +406,18 @@
                                 if (window.Livewire) {
                                     window.Livewire.dispatch('$refresh');
                                 }
+                            })
+                            .listen('OrderShippingUpdated', (e) => {
+                                window.dispatchEvent(new CustomEvent('toast', {
+                                    detail: {
+                                        message: e.message + ' (Kode: ' + e.order_code + ')',
+                                        type: 'info'
+                                    }
+                                }));
+
+                                if (window.Livewire) {
+                                    window.Livewire.dispatch('order-shipping-updated', { orderId: e.order_id });
+                                }
                             });
                     }
                 });
