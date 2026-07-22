@@ -26,6 +26,8 @@ class Sellers extends Component
 
     public bool $showDeleteModal = false;
 
+    public bool $showReactivateModal = false;
+
     public string $suspensionReason = '';
 
     public string $deleteReason = '';
@@ -190,7 +192,20 @@ class Sellers extends Component
         });
 
         Log::info('Seller reactivated by admin', $audit);
+        $this->showReactivateModal = false;
         session()->flash('success', 'Seller berhasil diaktifkan kembali dan dapat login.');
+    }
+
+    public function openReactivateModal(): void
+    {
+        $this->ensureAdmin();
+        Store::query()->whereKey($this->storeId)->where('status', 'suspended')->firstOrFail();
+        $this->showReactivateModal = true;
+    }
+
+    public function closeReactivateModal(): void
+    {
+        $this->showReactivateModal = false;
     }
 
     public function openDeleteModal(): void
@@ -337,6 +352,7 @@ class Sellers extends Component
         $this->resetValidation();
         $this->showSuspendModal = false;
         $this->showDeleteModal = false;
+        $this->showReactivateModal = false;
         $this->suspensionReason = '';
         $this->deleteReason = '';
         $this->deleteConfirmation = '';

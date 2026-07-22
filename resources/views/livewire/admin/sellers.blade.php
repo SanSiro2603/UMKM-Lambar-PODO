@@ -207,12 +207,11 @@
                                 <p class="pt-1 text-slate-500">{{ $store->suspended_at->format('d M Y, H:i') }}{{ $store->suspendedBy ? ' oleh '.$store->suspendedBy->name : '' }}</p>
                             @endif
                         </div>
-                        <button type="button" wire:click="reactivateStore"
-                                wire:confirm="Aktifkan kembali seller {{ $store->name }}? Seller akan dapat login dan tokonya kembali tampil di marketplace."
-                                wire:loading.attr="disabled" wire:target="reactivateStore"
+                        <button type="button" wire:click="openReactivateModal"
+                                wire:loading.attr="disabled" wire:target="openReactivateModal"
                                 class="w-full min-h-11 px-4 py-2.5 bg-green-500 text-white font-bold rounded-xl hover:bg-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none text-sm cursor-pointer">
-                            <span wire:loading.remove wire:target="reactivateStore">Aktifkan Kembali</span>
-                            <span wire:loading wire:target="reactivateStore">Mengaktifkan...</span>
+                            <span wire:loading.remove wire:target="openReactivateModal">Aktifkan Kembali</span>
+                            <span wire:loading wire:target="openReactivateModal">Membuka...</span>
                         </button>
                     </div>
                 @endif
@@ -265,6 +264,38 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        @endif
+
+        @if($showReactivateModal)
+            <div class="fixed inset-0 z-[70] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="reactivate-dialog-title"
+                 x-data x-init="$nextTick(() => $refs.cancelReactivate.focus())" @keydown.escape.window="$wire.closeReactivateModal()">
+                <button type="button" aria-label="Tutup dialog aktivasi seller" wire:click="closeReactivateModal" class="absolute inset-0 bg-slate-950/60 cursor-default"></button>
+                <div class="relative w-full max-w-md rounded-2xl bg-white p-5 shadow-modal sm:p-6">
+                    <div class="flex items-start gap-3">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-700">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </span>
+                        <div class="min-w-0">
+                            <h2 id="reactivate-dialog-title" class="font-heading text-lg font-bold text-surface-900">Aktifkan kembali {{ $store->name }}?</h2>
+                            <p class="mt-1 text-sm leading-relaxed text-surface-600">Seller dapat login kembali dan tokonya akan tampil lagi di marketplace.</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                        <button type="button" x-ref="cancelReactivate" wire:click="closeReactivateModal"
+                                class="min-h-11 rounded-xl border border-surface-300 px-4 py-2.5 text-sm font-semibold text-surface-700 transition-colors hover:bg-surface-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 cursor-pointer motion-reduce:transition-none">
+                            Batal
+                        </button>
+                        <button type="button" wire:click="reactivateStore" wire:loading.attr="disabled" wire:target="reactivateStore"
+                                class="min-h-11 rounded-xl bg-green-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-green-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer motion-reduce:transition-none">
+                            <span wire:loading.remove wire:target="reactivateStore">Aktifkan Seller</span>
+                            <span wire:loading wire:target="reactivateStore">Mengaktifkan...</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         @endif

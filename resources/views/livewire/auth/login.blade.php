@@ -2,8 +2,27 @@
     <h2 class="font-heading text-2xl font-bold text-surface-900">Selamat Datang Kembali!</h2>
     <p class="text-surface-500 mt-2">Masuk ke akun Anda untuk mulai berbelanja</p>
 
-    @if (session()->has('error'))
-        <div class="mt-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm font-medium">
+    @if (session()->has('seller_suspended'))
+        @php($suspendedNotice = session('seller_suspended'))
+        <div role="alert" class="mt-5 rounded-2xl border border-red-200 bg-red-50/80 p-4 text-red-900">
+            <div class="flex items-start gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.667 1.73-3L13.73 4c-.77-1.333-2.69-1.333-3.46 0L3.34 16c-.77 1.333.19 3 1.73 3z"/>
+                    </svg>
+                </span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-heading text-base font-bold">{{ $suspendedNotice['title'] }}</h3>
+                    <p class="mt-1 text-sm leading-relaxed text-red-700">Akses masuk ke akun ini telah diblokir oleh admin.</p>
+                    <div class="mt-3 border-t border-red-200 pt-3">
+                        <p class="text-xs font-semibold text-red-700">Alasan admin</p>
+                        <p class="mt-1 whitespace-pre-line break-words text-sm leading-relaxed text-red-900">{{ $suspendedNotice['reason'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @elseif (session()->has('error'))
+        <div role="alert" class="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">
             {{ session('error') }}
         </div>
     @endif

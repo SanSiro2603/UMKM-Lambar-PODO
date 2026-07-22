@@ -43,10 +43,21 @@ class SellerModerationWhatsappTest extends TestCase
         $this->assertSame($admin->id, $store->suspended_by);
         $this->get(route('stores.show', $store->slug))->assertNotFound();
 
-        Livewire::actingAs($admin)->test(Sellers::class)
+        $reactivation = Livewire::actingAs($admin)->test(Sellers::class)
             ->call('showStore', $store->id)
+            ->assertDontSeeHtml('wire:confirm=')
+            ->call('openReactivateModal')
+            ->assertSet('showReactivateModal', true)
+            ->assertSee('Aktifkan kembali '.$store->name.'?');
+
+        $this->assertSame('suspended', $store->fresh()->status);
+
+        $reactivation->call('closeReactivateModal')
+            ->assertSet('showReactivateModal', false)
+            ->call('openReactivateModal')
             ->call('reactivateStore')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertSet('showReactivateModal', false);
 
         $this->assertSame('approved', $store->fresh()->status);
         $this->get(route('stores.show', $store->slug))->assertOk();
@@ -62,28 +73,69 @@ class SellerModerationWhatsappTest extends TestCase
             'suspended_at' => now(),
         ]);
 
-        $component = Livewire::test(Login::class)->instance();
-        $component->email = $seller->email;
-        $component->password = 'password';
+        $this->attemptLogin($seller);
 
-        $session = app('session')->driver();
-        $session->start();
-        $request = Request::create(route('login'), 'POST');
-        $request->setLaravelSession($session);
-        app()->instance('request', $request);
-
-        $component->login();
-
-        $this->assertSame('Akun seller Anda telah dinonaktifkan oleh admin.', session('error'));
+        $this->assertSame([
+            'title' => 'Akun Seller Dinonaktifkan',
+            'reason' => 'Pelanggaran kebijakan marketplace.',
+        ], session('seller_suspended'));
 
         $this->assertGuest();
 
         $this->actingAs($seller)
             ->get(route('home'))
             ->assertRedirect(route('login'))
-            ->assertSessionHas('error', 'Akun seller Anda telah dinonaktifkan oleh admin.');
+            ->assertSessionHas('seller_suspended.reason', 'Pelanggaran kebijakan marketplace.');
 
         $this->assertGuest();
+    }
+
+    public function test_suspended_login_uses_fallback_when_reason_is_empty(): void
+    {
+        $store = $this->store();
+        $store->update([
+            'status' => 'suspended',
+            'suspension_reason' => null,
+            'suspended_at' => now(),
+        ]);
+
+        $this->attemptLogin($store->user);
+
+        $this->assertSame('Tidak ada alasan tambahan dari admin.', session('seller_suspended.reason'));
+        $this->assertGuest();
+    }
+
+    public function test_wrong_credentials_do_not_reveal_suspension_reason(): void
+    {
+        $store = $this->store();
+        $store->update([
+            'status' => 'suspended',
+            'suspension_reason' => 'Alasan ini bersifat privat.',
+        ]);
+
+        Livewire::test(Login::class)
+            ->set('email', $store->user->email)
+            ->set('password', 'password-salah')
+            ->call('login')
+            ->assertSee('Email atau kata sandi salah.')
+            ->assertDontSee('Alasan ini bersifat privat.');
+
+        $this->assertNull(session('seller_suspended'));
+        $this->assertGuest();
+    }
+
+    public function test_login_page_renders_admin_suspension_reason(): void
+    {
+        $this->withSession([
+            'seller_suspended' => [
+                'title' => 'Akun Seller Dinonaktifkan',
+                'reason' => 'Produk yang dijual tidak sesuai ketentuan pertanian.',
+            ],
+        ])->get(route('login'))
+            ->assertOk()
+            ->assertSee('Akun Seller Dinonaktifkan')
+            ->assertSee('Alasan admin')
+            ->assertSee('Produk yang dijual tidak sesuai ketentuan pertanian.');
     }
 
     public function test_non_admin_cannot_open_seller_administration(): void
@@ -223,6 +275,21 @@ class SellerModerationWhatsappTest extends TestCase
         $user->forceFill(['role' => $role])->save();
 
         return $user;
+    }
+
+    private function attemptLogin(User $seller): void
+    {
+        $component = Livewire::test(Login::class)->instance();
+        $component->email = $seller->email;
+        $component->password = 'password';
+
+        $session = app('session')->driver();
+        $session->start();
+        $request = Request::create(route('login'), 'POST');
+        $request->setLaravelSession($session);
+        app()->instance('request', $request);
+
+        $component->login();
     }
 
     private function store(string $status = 'approved', string $phone = '081234567890'): Store

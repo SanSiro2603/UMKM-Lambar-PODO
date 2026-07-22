@@ -45,11 +45,18 @@ class Login extends Component
             $authenticatedUser = Auth::user();
 
             if ($authenticatedUser->isSeller() && $authenticatedUser->store?->status === 'suspended') {
+                $suspensionReason = trim((string) $authenticatedUser->store->suspension_reason);
+
                 Auth::logout();
                 request()->session()->invalidate();
                 request()->session()->regenerateToken();
 
-                session()->flash('error', 'Akun seller Anda telah dinonaktifkan oleh admin.');
+                session()->flash('seller_suspended', [
+                    'title' => 'Akun Seller Dinonaktifkan',
+                    'reason' => $suspensionReason !== ''
+                        ? $suspensionReason
+                        : 'Tidak ada alasan tambahan dari admin.',
+                ]);
 
                 return;
             }

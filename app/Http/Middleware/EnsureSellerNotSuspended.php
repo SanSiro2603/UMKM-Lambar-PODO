@@ -14,12 +14,19 @@ class EnsureSellerNotSuspended
         $user = $request->user();
 
         if ($user?->role === 'seller' && $user->store?->status === 'suspended') {
+            $suspensionReason = trim((string) $user->store->suspension_reason);
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return redirect()->route('login')
-                ->with('error', 'Akun seller Anda telah dinonaktifkan oleh admin.');
+                ->with('seller_suspended', [
+                    'title' => 'Akun Seller Dinonaktifkan',
+                    'reason' => $suspensionReason !== ''
+                        ? $suspensionReason
+                        : 'Tidak ada alasan tambahan dari admin.',
+                ]);
         }
 
         return $next($request);
