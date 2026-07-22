@@ -2,18 +2,20 @@
 
 namespace App\Livewire\Auth;
 
-use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('layouts.auth')]
 class Login extends Component
 {
     public string $email = '';
+
     public string $password = '';
+
     public bool $remember = false;
 
     protected array $rules = [
@@ -26,12 +28,12 @@ class Login extends Component
         $this->validate();
 
         // 🔒 SECURITY FIX: Rate limiting (ISSUE-011)
-        $key = 'login:' . request()->ip();
-        
+        $key = 'login:'.request()->ip();
+
         if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
             throw ValidationException::withMessages([
-                'email' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik."
+                'email' => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$seconds} detik.",
             ]);
         }
 
@@ -40,19 +42,31 @@ class Login extends Component
         }
 
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            $authenticatedUser = Auth::user();
+
+            if ($authenticatedUser->isSeller() && $authenticatedUser->store?->status === 'suspended') {
+                Auth::logout();
+                request()->session()->invalidate();
+                request()->session()->regenerateToken();
+
+                session()->flash('error', 'Akun seller Anda telah dinonaktifkan oleh admin.');
+
+                return;
+            }
+
             // 🔒 SECURITY FIX: Clear rate limiter on success (ISSUE-011)
             RateLimiter::clear($key);
-            
+
             // 🔒 SECURITY FIX: Session regeneration (ISSUE-011)
             request()->session()->regenerate();
             request()->session()->regenerateToken();
-            
+
             // 🔒 SECURITY FIX: Audit log (ISSUE-013)
             Log::info('User logged in', [
                 'user_id' => Auth::id(),
                 'email' => Auth::user()->email,
                 'ip' => request()->ip(),
-                'user_agent' => request()->userAgent()
+                'user_agent' => request()->userAgent(),
             ]);
 
             $user = Auth::user();
@@ -68,7 +82,7 @@ class Login extends Component
 
         // 🔒 SECURITY FIX: Increment rate limiter on failure (ISSUE-011)
         RateLimiter::hit($key, 60);
-        
+
         session()->flash('error', 'Email atau kata sandi salah.');
     }
 

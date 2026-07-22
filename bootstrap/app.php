@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureSellerNotSuspended;
+use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SellerApprovedMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,9 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->appendToGroup('web', EnsureSellerNotSuspended::class);
+
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'seller.approved' => \App\Http\Middleware\SellerApprovedMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'seller.approved' => SellerApprovedMiddleware::class,
         ]);
 
         // Exclude Xendit webhook dari CSRF verification

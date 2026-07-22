@@ -23,6 +23,7 @@
         'pending' => 'bg-amber-50 text-amber-700',
         'approved' => 'bg-green-50 text-green-700',
         'rejected' => 'bg-red-50 text-red-700',
+        'suspended' => 'bg-slate-100 text-slate-700',
     ];
 
     $labels = [
@@ -45,6 +46,7 @@
         'pending' => 'Menunggu Persetujuan',
         'approved' => 'Disetujui',
         'rejected' => 'Ditolak',
+        'suspended' => 'Dinonaktifkan',
     ];
 
     $dotColors = [
@@ -67,6 +69,7 @@
         'pending' => 'bg-amber-500',
         'approved' => 'bg-green-500',
         'rejected' => 'bg-red-500',
+        'suspended' => 'bg-slate-500',
     ];
 
     $style = $styles[$status] ?? $styles['pending'];

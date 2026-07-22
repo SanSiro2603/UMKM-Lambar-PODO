@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Rating;
 
 class Store extends Model
 {
@@ -27,11 +26,26 @@ class Store extends Model
         'logo',
         'banner',
         'status',
+        'suspension_reason',
+        'suspended_at',
+        'suspended_by',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'suspended_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function suspendedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'suspended_by');
     }
 
     public function products(): HasMany

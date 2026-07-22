@@ -9,12 +9,14 @@ use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 class ProductDetailBuyNowTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('PLG-BUY-001 Pengunjung diminta login saat menggunakan Beli Sekarang')]
     public function test_guest_buy_now_dispatches_login_required_event(): void
     {
         $product = $this->createApprovedProduct();
@@ -24,6 +26,7 @@ class ProductDetailBuyNowTest extends TestCase
             ->assertDispatched('login-required');
     }
 
+    #[TestDox('PLG-BUY-002 Beli Sekarang membawa produk dan kuantitas ke checkout')]
     public function test_customer_buy_now_redirects_to_checkout_with_product_and_qty(): void
     {
         $product = $this->createApprovedProduct();
@@ -39,6 +42,7 @@ class ProductDetailBuyNowTest extends TestCase
             ]));
     }
 
+    #[TestDox('PLG-BUY-003 Produk habis tidak dapat dibeli langsung')]
     public function test_buy_now_with_empty_stock_dispatches_error_toast(): void
     {
         $product = $this->createApprovedProduct(stock: 0);
@@ -50,6 +54,7 @@ class ProductDetailBuyNowTest extends TestCase
             ->assertDispatched('toast');
     }
 
+    #[TestDox('PLG-BUY-004 Kuantitas Beli Sekarang dibatasi oleh stok')]
     public function test_buy_now_clamps_quantity_to_available_stock(): void
     {
         $product = $this->createApprovedProduct(stock: 2);

@@ -12,12 +12,14 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 class CheckoutShippingTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('PLG-CKO-010 Checkout online lokal membuat pesanan waiting payment dengan total dan stok benar')]
     public function test_buy_now_checkout_creates_order_with_automatic_shipping_zone(): void
     {
         Event::fake([OrderPaymentUploaded::class]);
@@ -59,6 +61,7 @@ class CheckoutShippingTest extends TestCase
         Event::assertDispatched(OrderPaymentUploaded::class);
     }
 
+    #[TestDox('PLG-CKO-011 Checkout COD membuat pesanan processing yang belum dibayar')]
     public function test_cod_checkout_creates_unpaid_processing_order(): void
     {
         Event::fake([OrderPaymentUploaded::class]);

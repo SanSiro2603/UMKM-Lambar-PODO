@@ -27,11 +27,13 @@ use Laravolt\Indonesia\Models\Village;
 use Livewire\Livewire;
 use Mockery;
 use Tests\TestCase;
+use PHPUnit\Framework\Attributes\TestDox;
 
 class ActiveOrderShippingSyncTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('PLG-DSH-006 Perubahan alamat memperbarui ongkir pesanan aktif')]
     public function test_customer_dashboard_previews_and_persists_active_order_shipping_changes(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -68,6 +70,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         $this->assertSame(80000, $scenario['order']->total_price);
     }
 
+    #[TestDox('PLG-DSH-007 Sinkronisasi COD menghitung ulang dari subtotal item')]
     public function test_cod_order_preview_and_sync_recalculate_shipping_from_item_subtotal(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -100,6 +103,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         Event::assertDispatched(OrderShippingUpdated::class, fn ($event) => $event->order->is($scenario['order']));
     }
 
+    #[TestDox('PLG-DSH-008 Setiap pesanan menggunakan asal toko masing-masing')]
     public function test_multiple_orders_use_each_store_as_shipping_origin(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -120,6 +124,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         $this->assertNotSame(5000, $second['order']->fresh()->shipping_cost);
     }
 
+    #[TestDox('PLG-DSH-009 Invoice pending dipertahankan jika total ongkir tidak berubah')]
     public function test_pending_invoice_is_kept_when_shipping_amount_does_not_change(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -147,6 +152,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         $this->assertStringContainsString('Jalan Baru', $scenario['order']->shipping_address);
     }
 
+    #[TestDox('PLG-DSH-010 Invoice pending diganti jika perubahan ongkir mengubah total')]
     public function test_pending_invoice_is_expired_when_new_shipping_changes_total(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -202,6 +208,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         ]);
     }
 
+    #[TestDox('PLG-DSH-011 Kegagalan penggantian invoice mempertahankan snapshot lama')]
     public function test_failed_invoice_expiry_keeps_order_snapshot_unchanged(): void
     {
         Event::fake([OrderShippingUpdated::class]);
@@ -236,6 +243,7 @@ class ActiveOrderShippingSyncTest extends TestCase
         Event::assertNotDispatched(OrderShippingUpdated::class);
     }
 
+    #[TestDox('PLG-DSH-012 Pesanan lunas dan dikirim mempertahankan alamat serta ongkir lama')]
     public function test_paid_and_shipped_orders_keep_their_original_snapshot(): void
     {
         Event::fake([OrderShippingUpdated::class]);

@@ -17,8 +17,9 @@ class Dashboard extends Component
         $store = Store::findOrFail($id);
         $store->update(['status' => 'approved']);
         
-        // Also update the user role to 'seller' in case it wasn't set (though onboarding does this)
-        $store->user->update(['role' => 'seller']);
+        // Role dilindungi dari mass assignment, jadi ubah secara eksplisit
+        // setelah admin menyetujui toko yang terkait dengan pengguna tersebut.
+        $store->user->forceFill(['role' => 'seller'])->save();
 
         session()->flash('success', 'Toko ' . $store->name . ' berhasil disetujui.');
     }

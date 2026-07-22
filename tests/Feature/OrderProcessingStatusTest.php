@@ -19,12 +19,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Mockery;
+use PHPUnit\Framework\Attributes\TestDox;
 use Tests\TestCase;
 
 class OrderProcessingStatusTest extends TestCase
 {
     use RefreshDatabase;
 
+    #[TestDox('PJL-ORD-019 Status COD processing dijelaskan konsisten kepada pelanggan dan penjual')]
     public function test_cod_processing_status_is_described_consistently_to_customer_and_seller(): void
     {
         ['customer' => $customer, 'seller' => $seller, 'order' => $order] = $this->createOrder();
@@ -48,6 +50,7 @@ class OrderProcessingStatusTest extends TestCase
             ->assertDontSee('Sudah Dibayar');
     }
 
+    #[TestDox('PJL-ORD-020 Seller dapat meneruskan pesanan processing kepada kurir')]
     public function test_seller_can_send_processing_order_to_courier(): void
     {
         Event::fake([OrderStatusUpdated::class]);
@@ -69,6 +72,7 @@ class OrderProcessingStatusTest extends TestCase
         ]);
     }
 
+    #[TestDox('KUR-029 Regresi penyelesaian kurir COD mengubah pesanan menjadi paid dan delivered')]
     public function test_courier_completion_marks_cod_as_paid_and_delivered(): void
     {
         Event::fake([OrderStatusUpdated::class]);
