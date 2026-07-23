@@ -23,7 +23,7 @@ class ProductDetailBuyNowTest extends TestCase
 
         Livewire::test(ProductDetail::class, ['slug' => $product->slug])
             ->call('buyNow')
-            ->assertDispatched('login-required');
+            ->assertDispatched('show-login-modal');
     }
 
     #[TestDox('PLG-BUY-002 Beli Sekarang membawa produk dan kuantitas ke checkout')]

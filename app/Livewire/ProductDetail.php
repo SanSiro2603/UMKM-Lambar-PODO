@@ -45,7 +45,12 @@ class ProductDetail extends Component
     public function addToCart()
     {
         if (!Auth::check()) {
-            $this->dispatch('login-required');
+            $this->dispatch('show-login-modal', nonce: uniqid('login_', true));
+            return;
+        }
+
+        if (Auth::user()->role !== 'customer') {
+            $this->dispatch('toast', message: 'Hanya akun customer yang dapat berbelanja.', type: 'error');
             return;
         }
 
@@ -84,7 +89,12 @@ class ProductDetail extends Component
     public function buyNow()
     {
         if (!Auth::check()) {
-            $this->dispatch('login-required');
+            $this->dispatch('show-login-modal', nonce: uniqid('login_', true));
+            return;
+        }
+
+        if (Auth::user()->role !== 'customer') {
+            $this->dispatch('toast', message: 'Hanya akun customer yang dapat berbelanja.', type: 'error');
             return;
         }
 

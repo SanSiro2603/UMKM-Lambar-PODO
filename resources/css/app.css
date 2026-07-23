@@ -90,6 +90,10 @@
    Base Styles
    ============================================ */
 
+[x-cloak] {
+    display: none !important;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -133,15 +137,8 @@ h1, h2, h3, h4, h5, h6 {
    Utility Classes
    ============================================ */
 
-@utility text-gradient {
-    background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-400));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
 @utility glass {
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.985);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -163,7 +160,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @utility card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-property: transform, box-shadow;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
     &:hover {
         transform: translateY(-4px);
         box-shadow: var(--shadow-card-hover);
@@ -189,4 +188,18 @@ h1, h2, h3, h4, h5, h6 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    .card-hover {
+        transition: none;
+    }
+
+    .card-hover:hover {
+        transform: none;
+    }
 }

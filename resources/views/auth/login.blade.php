@@ -34,7 +34,7 @@
                 <input type="checkbox" class="w-4 h-4 rounded border-surface-300 text-primary-500 focus:ring-primary-200">
                 <span class="text-sm text-surface-600">Ingat saya</span>
             </label>
-            <a href="#" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors">Lupa password?</a>
+            <a href="{{ route('password.request') }}" class="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors">Lupa password?</a>
         </div>
 
         {{-- Submit --}}

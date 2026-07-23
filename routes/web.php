@@ -61,6 +61,8 @@ Route::middleware(['throttle:public'])->group(function() {
 Route::get('/login', \App\Livewire\Auth\Login::class)->name('login')->middleware('guest');
 Route::get('/register', \App\Livewire\Auth\Register::class)->name('register')->middleware('guest');
 Route::get('/register-seller', \App\Livewire\Auth\RegisterSeller::class)->name('register.seller')->middleware('guest');
+Route::get('/forgot-password', \App\Livewire\Auth\ForgotPassword::class)->name('password.request')->middleware('guest');
+Route::get('/reset-password/{token}', \App\Livewire\Auth\ResetPassword::class)->name('password.reset')->middleware('guest');
 Route::any('/logout', function() {
     Auth::logout();
     request()->session()->invalidate();
@@ -73,9 +75,9 @@ Route::any('/logout', function() {
 // ============================================
 
 Route::middleware(['throttle:auth'])->group(function() {
-    Route::get('/cart', \App\Livewire\CartPage::class)->name('cart');
 
     Route::middleware(['auth', 'role:customer'])->group(function() {
+        Route::get('/cart', \App\Livewire\CartPage::class)->name('cart');
         Route::get('/checkout', \App\Livewire\Checkout::class)->name('checkout');
         Route::get('/customer/dashboard', \App\Livewire\Customer\Dashboard::class)->name('customer.dashboard');
         Route::get('/customer/orders', \App\Livewire\Customer\Orders::class)->name('customer.orders');

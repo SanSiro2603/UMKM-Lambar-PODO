@@ -147,7 +147,7 @@ class CustomerShoppingBlackBoxTest extends TestCase
         $product = $this->makeBlackBoxProduct();
         Livewire::test(ProductDetail::class, ['slug' => $product->slug])
             ->call('addToCart')
-            ->assertDispatched('login-required');
+            ->assertDispatched('show-login-modal');
     }
 
     #[TestDox('PLG-CRT-004 Produk baru dapat ditambahkan ke keranjang')]
